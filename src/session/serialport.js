@@ -1,6 +1,7 @@
 const SerialPort = require('serialport');
 const Session = require('./session');
 const Arduino = require('../upload/arduino');
+const ansi = require('ansi-string');
 
 const getUUID = id => {
     if (typeof id === 'number') return id.toString(16);
@@ -112,7 +113,7 @@ class SerialportSession extends Session {
         }
     }
 
-    connect(params) {
+    connect(params, afterupload=null) {
         return new Promise((resolve, reject) => {
             if (this.peripheral && this.peripheral.isOpen == true) {
                 return reject(new Error('already connected to peripheral'));
@@ -136,6 +137,9 @@ class SerialportSession extends Session {
             try {
                 port.open(error => {
                     if (error) {
+                        if (afterupload == true) {
+                            this.sendRemoteRequest('peripheralUnplug', {});
+                        }
                         return reject(new Error(error));
                     }
 
@@ -176,15 +180,6 @@ class SerialportSession extends Session {
         }
     }
 
-    bleWriteData(characteristic, withResponse, data) {
-        return new Promise((resolve, reject) => {
-            characteristic.write(data, !withResponse, (err) => {
-                if (err) return reject(err);
-                resolve();
-            });
-        })
-    }
-
     async write(params) {
         const { message, encoding } = params;
         const buffer = new Buffer(message, encoding);
@@ -216,32 +211,35 @@ class SerialportSession extends Session {
         }
     }
     async upload(params) {
-        const { code, encoding } = params;
+        const { message, encoding } = params;
+        const code = new Buffer.from(message, encoding).toString();
+
         let arduino = new Arduino;
 
         try {
-            const exitCode = await arduino.build(code);
+            const exitCode = await arduino.build(code, this.sendstd.bind(this));
             if (exitCode == 'Success') {
 
                 this.disconnect();
-                await arduino.flash(this.peripheral.path);
-                await this.connect(this.peripheralParams);
+                await arduino.flash(this.peripheral.path, this.sendstd.bind(this));
+                await this.connect(this.peripheralParams, true);
+
                 console.log('upload finish');
+
+                this.sendRemoteRequest('uploadSuccess', {});
             }
         } catch (err) {
-            // todo 发送这个错误给 vm
+            this.sendRemoteRequest('uploadError', {
+                message: ansi.red + err.message
+            });
             console.log(new Error(`Error while attempting to upload: ${err.message}`))
         }
-        
-        
-        // 1.将code写入文件
-        // 2.调用arduino编译文件
-        // 3.断开串口连接
-        // 4.调用avrdude下载
-        // 5.重新连接串口
-        // 过程中发送进程信息给vm 
-        // 信息 和 故障码为两个接收通道不可混淆
-        // todo 给arduino一个发送信息的回调函数
+    }
+
+    sendstd(message) { 
+        this.sendRemoteRequest('uploadStdout', {
+            message: message
+        });
     }
 
     dispose() {
