@@ -1,4 +1,4 @@
-const fs = require('fs'); // 引入fs模块
+const fs = require('fs');
 const { spawn } = require('child_process');
 var path = require('path')
 const ansi = require('ansi-string');
@@ -144,13 +144,13 @@ class Arduino {
             avrdude.stdout.on('data', (buf) => {
                 // It seems that avrdude didn't use stdout
                 let data = buf.toString();
-                console.log('[avrdude.out] ' + data);
+                // console.log('[avrdude.out] ' + data);
 
                 sendstd(data);
             });
 
             avrdude.on('exit', (code) => {
-                console.log('avrdude Exit code : ' + code);
+                // console.log('avrdude Exit code : ' + code);
                 switch (code) {
                     case 0:
                         return resolve('Success');

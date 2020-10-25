@@ -1,4 +1,4 @@
-const noble = require('noble-mac');
+const noble = require('noble');
 const Session = require('./session');
 
 const getUUID = id => {
@@ -180,7 +180,7 @@ class BLESession extends Session {
     async write (params) {
         try {
             const {message, encoding, withResponse} = params;
-            const buffer = new Buffer(message, encoding);
+            const buffer = Buffer.from(message, encoding);
             const characteristic = await this.getEndpoint('write request', params, 'write');
             for (let i = 0; i < buffer.length; i += 20) {
                 await this.bleWriteData(characteristic, withResponse, buffer.slice(i, 20));
@@ -251,7 +251,7 @@ class BLESession extends Session {
         })
     }
 
-    // noble bug: 当 write 之后, characteristic 对象会发生变化
+    // noble bug: After write, characteristic object will change
     repairNotifyAfterWrite () {
         for (const id in this.notifyCharacteristics) {
             const characteristic = this.notifyCharacteristics[id];
@@ -287,7 +287,7 @@ class BLESession extends Session {
                 return reject(`Peripheral is not connected for ${errorText}`);
             }
             let service;
-            let {serviceId, characteristicId} = params;
+            let { serviceId, characteristicId } = params;
             characteristicId = getUUID(characteristicId);
             if (this.characteristics[characteristicId]) {
                 return resolve(this.characteristics[characteristicId]);

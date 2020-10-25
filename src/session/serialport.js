@@ -223,16 +223,14 @@ class SerialportSession extends Session {
                 this.disconnect();
                 await arduino.flash(this.peripheral.path, this.sendstd.bind(this));
                 await this.connect(this.peripheralParams, true);
-
-                console.log('upload finish');
-
+                // console.log('upload finish');
                 this.sendRemoteRequest('uploadSuccess', {});
             }
         } catch (err) {
             this.sendRemoteRequest('uploadError', {
                 message: ansi.red + err.message
             });
-            console.log(new Error(`Error while attempting to upload: ${err.message}`))
+            // console.log(new Error(`Error while attempting to upload: ${err.message}`))
         }
     }
 

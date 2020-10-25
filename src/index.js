@@ -4,6 +4,7 @@ const {Server} = require('ws');
 
 const SocketPort = 20111;
 const ROUTERS = {
+    '/scratch/ble': require('./session/ble'),
     '/scratch/serialport': require('./session/serialport')
 };
 
