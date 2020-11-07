@@ -211,26 +211,30 @@ class SerialportSession extends Session {
         }
     }
     async upload(params) {
-        const { message, encoding } = params;
+        const { message, config, encoding } = params;
         const code = new Buffer.from(message, encoding).toString();
+        
+        switch (config.type) {
+            case 'arduino':
+                const arduino = new Arduino;
 
-        let arduino = new Arduino;
-
-        try {
-            const exitCode = await arduino.build(code, this.sendstd.bind(this));
-            if (exitCode == 'Success') {
-
-                this.disconnect();
-                await arduino.flash(this.peripheral.path, this.sendstd.bind(this));
-                await this.connect(this.peripheralParams, true);
-                // console.log('upload finish');
-                this.sendRemoteRequest('uploadSuccess', {});
-            }
-        } catch (err) {
-            this.sendRemoteRequest('uploadError', {
-                message: ansi.red + err.message
-            });
-            // console.log(new Error(`Error while attempting to upload: ${err.message}`))
+                try {
+                    const exitCode = await arduino.build(code, config.board, this.sendstd.bind(this));
+                    if (exitCode == 'Success') {
+                        this.disconnect();
+                        await arduino.flash(this.peripheral.path, config.partno, this.sendstd.bind(this));
+                        await this.connect(this.peripheralParams, true);
+                        this.sendRemoteRequest('uploadSuccess', {});
+                    }
+                } catch (err) {
+                    this.sendRemoteRequest('uploadError', {
+                        message: ansi.red + err.message
+                    });
+                }
+                break;
+            case 'microbit':
+                // todo: for Microbit
+                break;
         }
     }
 

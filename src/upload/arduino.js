@@ -29,7 +29,7 @@ class Arduino {
         return soure.slice(0, start) + newStr + soure.slice(start);
     }
 
-    build(code, sendstd) {
+    build(code, board, sendstd) {
         return new Promise((resolve, reject) => {
 
             if (!fs.existsSync(tempfilePath)) {
@@ -46,7 +46,7 @@ class Arduino {
             const arduinoDebug = spawn(arduinoDebugPath, [
                 '-v',
                 '--board',
-                'arduino:avr:uno',
+                board,
                 '--pref',
                 'build.path=' + projectPath,
                 '--verify',
@@ -107,13 +107,13 @@ class Arduino {
         })
     }
 
-    flash(peripheralPath, sendstd) {
+    flash(peripheralPath, partno, sendstd) {
         return new Promise((resolve, reject) => {
             const avrdude = spawn(avrdudePath, [
                 '-C',
                 avrdudeConfigPath,
                 '-v',
-                '-patmega328p',
+                '-p' + partno,
                 '-carduino',
                 '-P' + peripheralPath,
                 '-b115200',
