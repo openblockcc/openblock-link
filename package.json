@@ -28,7 +28,6 @@
     "ansi-string": "^0.2.1",
     "install": "^0.13.0",
     "noble": "^1.9.1",
-    "noble-mac": "https://github.com/Timeular/noble-mac.git",
     "serialport": "^9.0.1",
     "ws": "^7.1.1",
     "wss": "^3.3.4"
