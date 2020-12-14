@@ -1,0 +1,20 @@
+language: node_js
+node_js:
+- "12"
+env:
+  global:
+  - NPM_TAG=latest
+addons:
+  chrome: stable
+cache:
+  directories:
+  - node_modules
+deploy:
+- provider: npm
+  on:
+    branch:
+    - main
+  skip_cleanup: true
+  email: $NPM_EMAIL
+  api_key: $NPM_TOKEN
+  tag: $NPM_TAG

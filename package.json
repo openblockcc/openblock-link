@@ -1,29 +1,31 @@
 {
-  "name": "scratch-node-link",
+  "name": "scratchhw-link",
   "version": "0.1.0",
-  "description": "使用 nodejs 模拟 scratch-link 实现硬件连接",
+  "description": "Porvide local hardware function to scratchhw",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Micircle/scratch-node-link.git"
+    "url": "git+https://github.com/ScratchHW/scratchhw-link.git"
   },
   "keywords": [
-    "scratch",
+    "scratchhw",
     "link",
     "microbit",
+    "arduino",
     "nodejs",
     "scratch3.0",
-    "ble"
+    "ble",
+    "serialport"
   ],
-  "author": "KaneShao",
-  "license": "ISC",
+  "author": "ScratchHW Team",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Micircle/scratch-node-link/issues"
+    "url": "https://github.com/ScratchHW/scratchhw-link/issues"
   },
-  "homepage": "https://github.com/Micircle/scratch-node-link#readme",
+  "homepage": "https://github.com/ScratchHW/scratchhw-link#readme",
   "dependencies": {
     "ansi-string": "^0.2.1",
     "install": "^0.13.0",
