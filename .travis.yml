@@ -9,6 +9,8 @@ addons:
 cache:
   directories:
   - node_modules
+before_deploy:
+- npm --no-git-tag-version version $($(npm bin)/json -f package.json version)-prerelease.$(date +%Y%m%d%H%M%S)
 deploy:
 - provider: npm
   on:

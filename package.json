@@ -1,10 +1,13 @@
 {
   "name": "scratchhw-link",
-  "version": "0.1.0",
+  "version": "0.1.0-beta",
   "description": "Porvide local hardware function to scratchhw",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/server.js",
+    "docs": "jsdoc -c .jsdoc.json",
+    "lint": "eslint ./src",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -33,5 +36,10 @@
     "serialport": "^9.0.1",
     "ws": "^7.1.1",
     "wss": "^3.3.4"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.3.0",
+    "eslint-config-scratch": "^5.0.0"
   }
 }

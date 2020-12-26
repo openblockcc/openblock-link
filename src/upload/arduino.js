@@ -1,166 +1,144 @@
 const fs = require('fs');
-const { spawn } = require('child_process');
-var path = require('path')
+const {spawn} = require('child_process');
+const path = require('path');
 const ansi = require('ansi-string');
 
-const arduinoPath = path.join(__dirname, "/../../tools/Arduino");
-const arduinoDebugPath = path.join(arduinoPath, "arduino_debug");
-const avrdudePath = path.join(arduinoPath, "hardware/tools/avr/bin/avrdude");
-const avrdudeConfigPath = path.join(arduinoPath, "hardware/tools/avr/etc/avrdude.conf");
-
-const tempfilePath = path.join(__dirname, "/../../temp/arduino");
-const codefilePath = path.join(tempfilePath, "arduino.ino");
-const projectPath = path.join(tempfilePath, "build");
-const hexPath = path.join(projectPath, "arduino.ino.hex");
-
-const arduinoDebug_stderr_filter_list = /DEBUG StatusLogger|TRACE StatusLogger|INFO StatusLogger|WARN p.a.h.BoardCloudResolver|INFO c.a.u.n.HttpConnectionManager/g;
-const arduinoDebug_stderr_white_list = /Loading configuration...|正在加载配置...|Initializing packages...|正在初始化包...|Preparing boards...|正在准备开发板...|Verifying...|正在验证.../g;
-const arduinoDebug_stdout_green_list = /Sketch uses|项目使用了|Global variables|全局变量使用了/g;
-const avrdude_stdout_green_start = /Reading \||Writing \|/g;
-const avrdude_stdout_green_end = /%/g;
-const avrdude_stdout_white = /avrdude done/g;
-const avrdude_stdout_red_start = /can't open device|programmer is not responding/g;
-
-var avrdudeExitCode = null;
+const AVRDUDE_STDOUT_GREEN_START = /Reading \||Writing \|/g;
+const AVRDUDE_STDOUT_GREEN_END = /%/g;
+const AVRDUDE_STDOUT_WHITE = /avrdude done/g;
+const AVRDUDE_STDOUT_RED_START = /can't open device|programmer is not responding/g;
 
 class Arduino {
+    constructor (peripheralPath, config, userDataPath, toolsPath, sendstd) {
+        this._peripheralPath = peripheralPath;
+        this._config = config;
+        this._tempfilePath = path.join(userDataPath, 'project/arduino');
+        this._arduinoPath = path.join(toolsPath, 'Arduino');
+        this._sendstd = sendstd;
 
-    insertStr(soure, start, newStr) {
-        return soure.slice(0, start) + newStr + soure.slice(start);
+        this._arduinoBuilderPath = path.join(this._arduinoPath, 'arduino-builder');
+        this._avrdudePath = path.join(this._arduinoPath, 'hardware/tools/avr/bin/avrdude');
+        this._avrdudeConfigPath = path.join(this._arduinoPath, 'hardware/tools/avr/etc/avrdude.conf');
+
+        this._codefilePath = path.join(this._tempfilePath, 'arduino.ino');
+        this._projectPath = path.join(this._tempfilePath, 'build');
+        this._hexPath = path.join(this._projectPath, 'arduino.ino.hex');
     }
 
-    build(code, board, sendstd) {
+    build (code) {
         return new Promise((resolve, reject) => {
-
-            if (!fs.existsSync(tempfilePath)) {
-                fs.mkdirSync(tempfilePath, { recursive: true });
+            if (!fs.existsSync(this._projectPath)) {
+                fs.mkdirSync(this._projectPath, {recursive: true});
             }
 
-            fs.writeFile(codefilePath, code, function (err) {
+            fs.writeFile(this._codefilePath, code, err => {
                 if (err) {
-                    console.error(err);
                     return reject(err);
                 }
             });
 
-            const arduinoDebug = spawn(arduinoDebugPath, [
-                '-v',
-                '--board',
-                board,
-                '--pref',
-                'build.path=' + projectPath,
-                '--verify',
-                codefilePath
+            const arduinoDebug = spawn(this._arduinoBuilderPath, [
+                '-compile',
+                '-logger=human',
+                '-hardware', path.join(this._arduinoPath, 'hardware'),
+                '-tools', path.join(this._arduinoPath, 'tools-builder'),
+                '-tools', path.join(this._arduinoPath, 'hardware/tools/avr'),
+                '-libraries', path.join(this._arduinoPath, 'libraries'),
+                '-fqbn', this._config.board,
+                '-build-path', path.join(this._tempfilePath, 'build'),
+                '-build-cache', path.join(this._tempfilePath, 'cache'),
+                '-warnings=none',
+                '-verbose',
+                this._codefilePath
             ]);
 
-            arduinoDebug.stderr.on('data', (buf) => {
-                let data = buf.toString();
-                let ansiColor = null;
-
-                if ((data.search(arduinoDebug_stderr_filter_list) == -1) && (data != '\r\n')) {
-                    // console.log('[arduinoDebug.err] ' + data);
-
-                    if (data.search(arduinoDebug_stderr_white_list) != -1) {
-                        ansiColor = ansi.clear;
-                    }
-                    else {
-                        ansiColor = ansi.red;
-                    }
-                    sendstd(ansiColor + data);
-                }
+            arduinoDebug.stderr.on('data', buf => {
+                this._sendstd(ansi.red + buf.toString());
             });
 
-            arduinoDebug.stdout.on('data', (buf) => {
-                let data = buf.toString();
+            arduinoDebug.stdout.on('data', buf => {
+                const data = buf.toString();
                 let ansiColor = null;
 
-                // console.log('[arduinoDebug.out] ' + data);
-                if (data.search(arduinoDebug_stdout_green_list) != -1) {
+                if (data.search(/Sketch uses|Global variables/g) === -1) {
+                    ansiColor = ansi.clear;
+                } else {
                     ansiColor = ansi.green;
                 }
-                else {
-                    ansiColor = ansi.clear;
-                }
-                sendstd(ansiColor + data);
+                this._sendstd(ansiColor + data);
             });
 
-            arduinoDebug.on('exit', (code) => {
-                sendstd(ansi.clear + '\r\n');  // End ansi color setting
-                switch (code) {
-                    case 0:
-                        return resolve('Success');
-                        break;
-                    case 1:
-                        return reject(new Error('Build failed'));
-                        break;
-                    case 2:
-                        return reject(new Error('Sketch not found'));
-                        break;
-                    case 3:
-                        return reject(new Error('Invalid (argument for) commandline optiond'));
-                        break;
-                    case 4:
-                        return reject(new Error('Preference passed to --get-pref does not exist'));
-                        break;
+            arduinoDebug.on('exit', outCode => {
+                this._sendstd(`${ansi.clear}\r\n`); // End ansi color setting
+                switch (outCode) {
+                case 0:
+                    return resolve('Success');
+                case 1:
+                    return reject(new Error('Build failed'));
+                case 2:
+                    return reject(new Error('Sketch not found'));
+                case 3:
+                    return reject(new Error('Invalid (argument for) commandline optiond'));
+                case 4:
+                    return reject(new Error('Preference passed to --get-pref does not exist'));
                 }
             });
-        })
+        });
     }
 
-    flash(peripheralPath, partno, sendstd) {
+    _insertStr (soure, start, newStr) {
+        return soure.slice(0, start) + newStr + soure.slice(start);
+    }
+
+    flash () {
         return new Promise((resolve, reject) => {
-            const avrdude = spawn(avrdudePath, [
+            const avrdude = spawn(this._avrdudePath, [
                 '-C',
-                avrdudeConfigPath,
+                this._avrdudeConfigPath,
                 '-v',
-                '-p' + partno,
+                `-p${this._config.partno}`,
                 '-carduino',
-                '-P' + peripheralPath,
+                `-P${this._peripheralPath}`,
                 '-b115200',
                 '-D',
-                '-Uflash:w:' + hexPath + ':i'
+                `-Uflash:w:${this._hexPath}:i`
             ]);
 
-            avrdude.stderr.on('data', (buf) => {
+            avrdude.stderr.on('data', buf => {
                 let data = buf.toString();
-                // console.log('[avrdude.err] ' + data);
 
-                // todo: Because the feacture of avrdude sends STD information intermittently. There should be a better way to handle these mesaage.
-                if (data.search(avrdude_stdout_green_start) != -1) {
-                    data = this.insertStr(data, data.search(avrdude_stdout_green_start), ansi.green)
+                // todo: Because the feacture of avrdude sends STD information intermittently.
+                // There should be a better way to handle these mesaage.
+                if (data.search(AVRDUDE_STDOUT_GREEN_START) != -1) { // eslint-disable-line eqeqeq
+                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_GREEN_START), ansi.green);
                 }
-                if (data.search(avrdude_stdout_green_end) != -1) {
-                    data = this.insertStr(data, data.search(avrdude_stdout_green_end) + 1, ansi.clear)
+                if (data.search(AVRDUDE_STDOUT_GREEN_END) != -1) { // eslint-disable-line eqeqeq
+                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_GREEN_END) + 1, ansi.clear);
                 }
-                if (data.search(avrdude_stdout_white) != -1) {
-                    data = this.insertStr(data, data.search(avrdude_stdout_white), ansi.clear)
+                if (data.search(AVRDUDE_STDOUT_WHITE) != -1) { // eslint-disable-line eqeqeq
+                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_WHITE), ansi.clear);
                 }
-                if (data.search(avrdude_stdout_red_start) != -1) {
-                    data = this.insertStr(data, data.search(avrdude_stdout_red_start), ansi.red)
+                if (data.search(AVRDUDE_STDOUT_RED_START) != -1) { // eslint-disable-line eqeqeq
+                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_RED_START), ansi.red);
                 }
-                sendstd(data);
+                this._sendstd(data);
             });
 
-            avrdude.stdout.on('data', (buf) => {
+            avrdude.stdout.on('data', buf => {
                 // It seems that avrdude didn't use stdout
-                let data = buf.toString();
-                // console.log('[avrdude.out] ' + data);
-
-                sendstd(data);
+                const data = buf.toString();
+                this._sendstd(data);
             });
 
-            avrdude.on('exit', (code) => {
-                // console.log('avrdude Exit code : ' + code);
+            avrdude.on('exit', code => {
                 switch (code) {
-                    case 0:
-                        return resolve('Success');
-                        break;
-                    case 1:
-                        return reject(new Error('avrdude failed to flash'));
-                        break;
+                case 0:
+                    return resolve('Success');
+                case 1:
+                    return reject(new Error('avrdude failed to flash'));
                 }
             });
-        })
+        });
     }
 }
 

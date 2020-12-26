@@ -24,43 +24,44 @@ class BLESession extends Session {
 
     async didReceiveCall (method, params, completion) {
         switch (method) {
-            case 'discover':
-                this.discover(params);
-                completion(null, null);
-                break;
-            case 'connect':
-                await this.connect(params);
-                completion(null, null);
-                break;
-            case 'disconnect':
-                await this.disconnect(params);
-                completion(null, null);
-                break;
-            case 'write':
-                completion(await this.write(params), null);
-                this.repairNotifyAfterWrite();
-                break;
-            case 'read':
-                completion(await this.read(params), null);
-            case 'startNotifications':
-                await this.startNotifications(params);
-                completion(null, null);
-                break;
-            case 'stopNotifications':
-                await this.stopNotifications(params);
-                completion(null, null);
-                break;
-            case 'getServices':
-                completion((this.services || []).map(service => service.uuid), null);
-                break;
-            case 'pingMe':
-                completion('willPing', null);
-                this.sendRemoteRequest('ping', null, (result, error) => {
-                    console.log(`Got result from ping: ${result}`);
-                });
-                break;
-            default:
-                throw new Error(`Method not found`);
+        case 'discover':
+            this.discover(params);
+            completion(null, null);
+            break;
+        case 'connect':
+            await this.connect(params);
+            completion(null, null);
+            break;
+        case 'disconnect':
+            await this.disconnect(params);
+            completion(null, null);
+            break;
+        case 'write':
+            completion(await this.write(params), null);
+            this.repairNotifyAfterWrite();
+            break;
+        case 'read':
+            completion(await this.read(params), null);
+            break;
+        case 'startNotifications':
+            await this.startNotifications(params);
+            completion(null, null);
+            break;
+        case 'stopNotifications':
+            await this.stopNotifications(params);
+            completion(null, null);
+            break;
+        case 'getServices':
+            completion((this.services || []).map(service => service.uuid), null);
+            break;
+        case 'pingMe':
+            completion('willPing', null);
+            this.sendRemoteRequest('ping', null, (result, error) => {
+                console.log(`Got result from ping: ${result}`);
+            });
+            break;
+        default:
+            throw new Error(`Method not found`);
         }
     }
 
@@ -102,9 +103,9 @@ class BLESession extends Session {
                 })) return false;
                 if (manufacturerData && advertisement.manufacturerData) {
                     if (manufacturerData.length !== advertisement.manufacturerData.length) {
-                        return false
+                        return false;
                     }
-                    if (!manufacturerData.every((data, i) => dvertisement.manufacturerData[i] === data)) {
+                    if (!manufacturerData.every((data, i) => advertisement.manufacturerData[i] === data)) {
                         return false;
                     }
                 }
@@ -159,22 +160,22 @@ class BLESession extends Session {
                         resolve();
                     });
                 });
-                peripheral.on('disconnect', (err) => {
+                peripheral.on('disconnect', err => {
                     this.disconnect();
                 });
             } catch (err) {
                 reject(err);
             }
-        })
+        });
     }
 
     bleWriteData (characteristic, withResponse, data) {
         return new Promise((resolve, reject) => {
-            characteristic.write(data, !withResponse, (err) => {
+            characteristic.write(data, !withResponse, err => {
                 if (err) return reject(err);
                 resolve();
             });
-        })
+        });
     }
 
     async write (params) {
@@ -218,24 +219,23 @@ class BLESession extends Session {
     }
 
     async startNotifications (params, characteristic) {
-        let uuid;
         if (!characteristic || characteristic.properties.indexOf('notify') === -1) {
             characteristic = await this.getEndpoint('startNotifications request', params, 'notify');
         }
-        uuid = getUUID(characteristic.uuid);
+        const uuid = getUUID(characteristic.uuid);
         if (!this.notifyCharacteristics[uuid]) {
             this.notifyCharacteristics[uuid] = characteristic;
             characteristic.subscribe();
         }
-        if (!characteristic._events || !characteristic._events['data']) {
-            characteristic.on('data', (data) => {
+        if (!characteristic._events || !characteristic._events.data) {
+            characteristic.on('data', data => {
                 this.onValueChanged(characteristic, data);
             });
         }
     }
 
     async stopNotifications (params) {
-        console.log('stopNotifications !!!')
+        console.log('stopNotifications !!!');
         const characteristic = await this.getEndpoint('stopNotifications request', params, 'notify');
         characteristic.unsubscribe();
         characteristic.removeAllListeners('data');
@@ -247,8 +247,8 @@ class BLESession extends Session {
             characteristic.notify(notify, err => {
                 if (err) return reject(err);
                 resolve();
-            })
-        })
+            });
+        });
     }
 
     // noble bug: After write, characteristic object will change
@@ -287,7 +287,8 @@ class BLESession extends Session {
                 return reject(`Peripheral is not connected for ${errorText}`);
             }
             let service;
-            let { serviceId, characteristicId } = params;
+            let serviceUuid;
+            let {serviceId, characteristicId} = params;
             characteristicId = getUUID(characteristicId);
             if (this.characteristics[characteristicId]) {
                 return resolve(this.characteristics[characteristicId]);

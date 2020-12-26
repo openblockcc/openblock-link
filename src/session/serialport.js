@@ -3,17 +3,13 @@ const Session = require('./session');
 const Arduino = require('../upload/arduino');
 const ansi = require('ansi-string');
 
-const getUUID = id => {
-    if (typeof id === 'number') return id.toString(16);
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) {
-        return id.split('-').join('');
-    }
-    return id;
-};
-
 class SerialportSession extends Session {
-    constructor(socket) {
+    constructor (socket, userDataPath, toolsPath) {
         super(socket);
+
+        this.userDataPath = userDataPath;
+        this.toolsPath = toolsPath;
+
         this._type = 'serialport';
         this.peripheral = null;
         this.peripheralParams = null;
@@ -24,109 +20,105 @@ class SerialportSession extends Session {
         this.isRead = false;
     }
 
-    async didReceiveCall(method, params, completion) {
+    async didReceiveCall (method, params, completion) {
         switch (method) {
-            case 'discover':
-                this.discover(params);
-                completion(null, null);
-                break;
-            case 'connect':
-                await this.connect(params);
-                completion(null, null);
-                break;
-            case 'disconnect':
-                await this.disconnect(params);
-                completion(null, null);
-                break;
-            case 'write':
-                completion(await this.write(params), null);
-                break;
-            case 'read':
-                await this.read(params);
-                completion(null, null);
-                break;
-            case 'upload':
-                completion(await this.upload(params), null);
-                break;
-            case 'getServices':
-                completion((this.services || []).map(service => service.uuid), null);
-                break;
-            case 'pingMe':
-                completion('willPing', null);
-                this.sendRemoteRequest('ping', null, (result, error) => {
-                    console.log(`Got result from ping: ${result}`);
-                });
-                break;
-            default:
-                throw new Error(`Method not found`);
+        case 'discover':
+            this.discover(params);
+            completion(null, null);
+            break;
+        case 'connect':
+            await this.connect(params);
+            completion(null, null);
+            break;
+        case 'disconnect':
+            await this.disconnect(params);
+            completion(null, null);
+            break;
+        case 'write':
+            completion(await this.write(params), null);
+            break;
+        case 'read':
+            await this.read(params);
+            completion(null, null);
+            break;
+        case 'upload':
+            completion(await this.upload(params), null);
+            break;
+        case 'getServices':
+            completion((this.services || []).map(service => service.uuid), null);
+            break;
+        case 'pingMe':
+            completion('willPing', null);
+            this.sendRemoteRequest('ping', null, (result, error) => {
+                console.log(`Got result from ping: ${result}`);
+            });
+            break;
+        default:
+            throw new Error(`Method not found`);
         }
     }
 
-    discover(params) {
+    discover (params) {
         if (this.services) {
             throw new Error('cannot discover when connected');
         }
-        const { filters } = params;
+        const {filters} = params;
         if (!Array.isArray(filters.pnpid) || filters.pnpid.length < 1) {
             throw new Error('discovery request must include filters');
         }
         this.reportedPeripherals = {};
 
-        this.peripheralsScanorTimer = setInterval(function () {
+        this.peripheralsScanorTimer = setInterval(() => {
             SerialPort.list().then(peripheral => {
                 this.onAdvertisementReceived(peripheral, filters);
-            })
-        }.bind(this), 100);
+            });
+        }, 100);
     }
 
-    onAdvertisementReceived(peripheral, filters) {
-        if (peripheral != null) {
-            peripheral.forEach((device) => {
-                let pnpid = device.pnpId.substring(0, 21);
+    onAdvertisementReceived (peripheral, filters) {
+        if (peripheral) {
+            peripheral.forEach(device => {
+                const pnpid = device.pnpId.substring(0, 21);
                 let name;
 
-                if (pnpid == 'USB\\VID_1A86&PID_7523') {
-                    name = 'USB-SERIAL CH340'
-                }
-                else {
-                    name = 'Unknown device'
+                if (pnpid === 'USB\\VID_1A86&PID_7523') {
+                    name = 'USB-SERIAL CH340';
+                } else {
+                    name = 'Unknown device';
                 }
 
                 if (filters.pnpid.includes('*')) {
                     this.reportedPeripherals[device.path] = device;
                     this.sendRemoteRequest('didDiscoverPeripheral', {
                         peripheralId: device.path,
-                        name: name + ' (' + device.path + ')',
+                        name: `${name} (${device.path})`
+                    });
+                } else if (filters.pnpid.includes(pnpid)) {
+
+                    this.reportedPeripherals[device.path] = device;
+                    this.sendRemoteRequest('didDiscoverPeripheral', {
+                        peripheralId: device.path,
+                        name: `${name} (${device.path})`
                     });
                 }
-                else {
-                    if (filters.pnpid.includes(pnpid)) {
-
-                        this.reportedPeripherals[device.path] = device;
-                        this.sendRemoteRequest('didDiscoverPeripheral', {
-                            peripheralId: device.path,
-                            name: name + ' (' + device.path + ')',
-                        });
-                    }
-                }
-            })
+            });
         }
     }
 
-    connect(params, afterupload=null) {
+    connect (params, afterUpload = null) {
         return new Promise((resolve, reject) => {
-            if (this.peripheral && this.peripheral.isOpen == true) {
+            if (this.peripheral && this.peripheral.isOpen === true) {
                 return reject(new Error('already connected to peripheral'));
             }
-            const { peripheralId } = params;
-            const { peripheralConfig } = params;
+            const {peripheralId} = params;
+            const {peripheralConfig} = params;
             const peripheral = this.reportedPeripherals[peripheralId];
             if (!peripheral) {
                 return reject(new Error(`invalid peripheral ID: ${peripheralId}`));
             }
             if (this.peripheralsScanorTimer) {
                 clearInterval(this.peripheralsScanorTimer);
-                this.peripheralsScanorTimer == null;
+                this.peripheralsScanorTimer = null;
             }
             const port = new SerialPort(peripheral.path, {
                 baudRate: peripheralConfig.config.baudRate,
@@ -137,7 +129,7 @@ class SerialportSession extends Session {
             try {
                 port.open(error => {
                     if (error) {
-                        if (afterupload == true) {
+                        if (afterUpload === true) {
                             this.sendRemoteRequest('peripheralUnplug', {});
                         }
                         return reject(new Error(error));
@@ -147,30 +139,29 @@ class SerialportSession extends Session {
                     this.peripheralParams = params;
 
                     // Scan COM status prevent device pulled out
-                    this.connectStateDetectorTimer = setInterval(function () {
-                        if (this.peripheral.isOpen == false) {
+                    this.connectStateDetectorTimer = setInterval(() => {
+                        if (this.peripheral.isOpen === false) {
                             clearInterval(this.connectStateDetectorTimer);
-                            console.log('pulled out disconnect');
                             this.disconnect();
                             this.sendRemoteRequest('peripheralUnplug', {});
                         }
-                    }.bind(this), 10);
+                    }, 10);
 
                     // Only when the receiver function is set, can isopen detect that the device is pulled out
                     // A strange features of npm serialport package
-                    port.on('data', function (rev) {
+                    port.on('data', rev => {
                         this.onMessageCallback(rev);
-                    }.bind(this));
+                    });
 
                     resolve();
                 });
             } catch (err) {
                 reject(err);
             }
-        })
+        });
     }
 
-    onMessageCallback(rev) {
+    onMessageCallback (rev) {
         const params = {
             encoding: 'base64',
             message: rev.toString('base64')
@@ -180,71 +171,73 @@ class SerialportSession extends Session {
         }
     }
 
-    async write(params) {
-        const { message, encoding } = params;
-        const buffer = new Buffer(message, encoding);
+    async write (params) {
+        const {message, encoding} = params;
+        const buffer = new Buffer.from(message, encoding);
 
-        this.peripheral.write(buffer, 'Buffer', (err) => {
+        this.peripheral.write(buffer, 'Buffer', err => {
             if (err) {
                 return new Error(`Error while attempting to write: ${err.message}`);
-            } else {
-                return buffer.length;
             }
-        })
+            return buffer.length;
+
+        });
     }
 
-    read() {
+    read () {
         this.isRead = true;
     }
 
-    disconnect() {
-        if (this.peripheral && this.peripheral.isOpen == true) {
+    disconnect () {
+        if (this.peripheral && this.peripheral.isOpen === true) {
             if (this.connectStateDetectorTimer) {
                 clearInterval(this.connectStateDetectorTimer);
                 this.connectStateDetectorTimer = null;
             }
             this.peripheral.close(error => {
                 if (error) {
-                    return reject(new Error(error));
+                    return new Error(error);
                 }
             });
         }
     }
-    async upload(params) {
-        const { message, config, encoding } = params;
+    async upload (params) {
+        const {message, config, encoding} = params;
         const code = new Buffer.from(message, encoding).toString();
-        
-        switch (config.type) {
-            case 'arduino':
-                const arduino = new Arduino;
+        let tool;
 
-                try {
-                    const exitCode = await arduino.build(code, config.board, this.sendstd.bind(this));
-                    if (exitCode == 'Success') {
-                        this.disconnect();
-                        await arduino.flash(this.peripheral.path, config.partno, this.sendstd.bind(this));
-                        await this.connect(this.peripheralParams, true);
-                        this.sendRemoteRequest('uploadSuccess', {});
-                    }
-                } catch (err) {
-                    this.sendRemoteRequest('uploadError', {
-                        message: ansi.red + err.message
-                    });
+        switch (config.type) {
+        case 'arduino':
+            tool = new Arduino(this.peripheral.path, config, this.userDataPath,
+                this.toolsPath, this.sendstd.bind(this));
+
+            try {
+                const exitCode = await tool.build(code);
+                if (exitCode === 'Success') {
+                    this.disconnect();
+                    await tool.flash();
+                    await this.connect(this.peripheralParams, true);
+                    this.sendRemoteRequest('uploadSuccess', {});
                 }
-                break;
-            case 'microbit':
-                // todo: for Microbit
-                break;
+            } catch (err) {
+                this.sendRemoteRequest('uploadError', {
+                    message: ansi.red + err.message
+                });
+            }
+            break;
+        case 'microbit':
+            // todo: for Microbit
+            break;
         }
     }
 
-    sendstd(message) { 
+    sendstd (message) {
         this.sendRemoteRequest('uploadStdout', {
             message: message
         });
     }
 
-    dispose() {
+    dispose () {
         this.disconnect();
         super.dispose();
         this.socket = null;
@@ -258,7 +251,7 @@ class SerialportSession extends Session {
         }
         if (this.peripheralsScanorTimer) {
             clearInterval(this.peripheralsScanorTimer);
-            this.peripheralsScanorTimer == null;
+            this.peripheralsScanorTimer = null;
         }
         this.isRead = false;
     }

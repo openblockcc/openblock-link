@@ -9,7 +9,7 @@ class Session {
         this._socket.addListener('message', this.onMessage);
     }
 
-    dispose() {
+    dispose () {
         if (this._socket) {
             this._socket.removeListener('message', this.onMessage);
             if (this._socket.readyState === this._socket.OPEN) {
@@ -21,13 +21,13 @@ class Session {
     }
 
     getNextId () {
-        return this._nextId ++;
+        return this._nextId++;
     }
 
     makeResponse (id, result, error) {
         const response = {
             id,
-            jsonrpc: '2.0',
+            jsonrpc: '2.0'
         };
         if (error) {
             response.error = error;
@@ -45,8 +45,8 @@ class Session {
         });
     }
 
-    onBinary (messageBytes) {
-        
+    onBinary () {
+
     }
 
     didReceiveMessage (message, sendResponseText) {
@@ -61,7 +61,7 @@ class Session {
             } catch (err1) {
                 sendResponseInternal(null, 'Could not encode response');
             }
-        }
+        };
         try {
             if (json.jsonrpc !== '2.0') {
                 throw new Error('unrecognized JSON-RPC version string');
@@ -106,8 +106,7 @@ class Session {
         }
     }
 
-    didReceiveCall (method, params, resultHandler) {
-        // 被复写
+    didReceiveCall () {
     }
 
     sendRemoteRequest (method, params, completion) {
@@ -116,7 +115,7 @@ class Session {
             method
         };
         if (params) {
-            request.params = params
+            request.params = params;
         }
         if (completion) {
             const requestId = this.getNextId();
