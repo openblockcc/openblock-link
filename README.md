@@ -1,4 +1,6 @@
-# scratch-link
+# scratchhw-link
+![](https://img.shields.io/travis/com/ScratchHW/scratchhw-link) ![](https://img.shields.io/github/license/ScratchHW/scratch-link)
+
 This project start from [https://github.com/Micircle/scratch-node-link](https://github.com/Micircle/scratch-node-link). I add a lot of new features like: serialport connection and arduino build. 
 
 ### Instructions
