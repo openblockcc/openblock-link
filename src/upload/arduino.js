@@ -144,7 +144,7 @@ class Arduino {
 
     flashRealtimeFirmware () {
         return new Promise((resolve, reject) => {
-            const firmwarePath = path.join(this._arduinoPath, 'realtime-firmware', firmware[this._config.board]);
+            const firmwarePath = path.join(this._arduinoPath, '../RealtimeFirmware', firmware[this._config.board]);
 
             const avrdude = spawn(this._avrdudePath, [
                 '-C',
