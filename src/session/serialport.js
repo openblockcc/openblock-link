@@ -2,6 +2,7 @@ const SerialPort = require('serialport');
 const Session = require('./session');
 const Arduino = require('../upload/arduino');
 const ansi = require('ansi-string');
+const usbId = require('../lib/usb-id');
 
 class SerialportSession extends Session {
     constructor (socket, userDataPath, toolsPath) {
@@ -44,6 +45,9 @@ class SerialportSession extends Session {
         case 'upload':
             completion(await this.upload(params), null);
             break;
+        case 'uploadFirmware':
+            completion(await this.uploadFirmware(params), null);
+            break;
         case 'getServices':
             completion((this.services || []).map(service => service.uuid), null);
             break;
@@ -75,17 +79,16 @@ class SerialportSession extends Session {
         }, 100);
     }
 
+    searchByKey (map, route) {
+        return map[route] ? map[route] : null;
+    }
+
     onAdvertisementReceived (peripheral, filters) {
         if (peripheral) {
             peripheral.forEach(device => {
                 const pnpid = device.pnpId.substring(0, 21);
-                let name;
 
-                if (pnpid === 'USB\\VID_1A86&PID_7523') {
-                    name = 'USB-SERIAL CH340';
-                } else {
-                    name = 'Unknown device';
-                }
+                const name = usbId[pnpid] ? usbId[pnpid] : 'Unknown device';
 
                 if (filters.pnpid.includes('*')) {
                     this.reportedPeripherals[device.path] = device;
@@ -227,6 +230,28 @@ class SerialportSession extends Session {
             break;
         case 'microbit':
             // todo: for Microbit
+            break;
+        }
+    }
+
+    async uploadFirmware (params) {
+        // console.log(params);
+        let tool;
+
+        switch (params.type) {
+        case 'arduino':
+            tool = new Arduino(this.peripheral.path, params, this.userDataPath,
+                this.toolsPath, this.sendstd.bind(this));
+            try {
+                this.disconnect();
+                await tool.flashRealtimeFirmware();
+                await this.connect(this.peripheralParams, true);
+                this.sendRemoteRequest('uploadSuccess', {});
+            } catch (err) {
+                this.sendRemoteRequest('uploadError', {
+                    message: ansi.red + err.message
+                });
+            }
             break;
         }
     }

@@ -2,6 +2,7 @@ const fs = require('fs');
 const {spawn} = require('child_process');
 const path = require('path');
 const ansi = require('ansi-string');
+const firmware = require('../lib/firmware');
 
 const AVRDUDE_STDOUT_GREEN_START = /Reading \||Writing \|/g;
 const AVRDUDE_STDOUT_GREEN_END = /%/g;
@@ -102,6 +103,59 @@ class Arduino {
                 '-b115200',
                 '-D',
                 `-Uflash:w:${this._hexPath}:i`
+            ]);
+
+            avrdude.stderr.on('data', buf => {
+                let data = buf.toString();
+
+                // todo: Because the feacture of avrdude sends STD information intermittently.
+                // There should be a better way to handle these mesaage.
+                if (data.search(AVRDUDE_STDOUT_GREEN_START) != -1) { // eslint-disable-line eqeqeq
+                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_GREEN_START), ansi.green);
+                }
+                if (data.search(AVRDUDE_STDOUT_GREEN_END) != -1) { // eslint-disable-line eqeqeq
+                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_GREEN_END) + 1, ansi.clear);
+                }
+                if (data.search(AVRDUDE_STDOUT_WHITE) != -1) { // eslint-disable-line eqeqeq
+                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_WHITE), ansi.clear);
+                }
+                if (data.search(AVRDUDE_STDOUT_RED_START) != -1) { // eslint-disable-line eqeqeq
+                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_RED_START), ansi.red);
+                }
+                this._sendstd(data);
+            });
+
+            avrdude.stdout.on('data', buf => {
+                // It seems that avrdude didn't use stdout
+                const data = buf.toString();
+                this._sendstd(data);
+            });
+
+            avrdude.on('exit', code => {
+                switch (code) {
+                case 0:
+                    return resolve('Success');
+                case 1:
+                    return reject(new Error('avrdude failed to flash'));
+                }
+            });
+        });
+    }
+
+    flashRealtimeFirmware () {
+        return new Promise((resolve, reject) => {
+            const firmwarePath = path.join(this._arduinoPath, 'realtime-firmware', firmware[this._config.board]);
+
+            const avrdude = spawn(this._avrdudePath, [
+                '-C',
+                this._avrdudeConfigPath,
+                '-v',
+                `-p${this._config.partno}`,
+                '-carduino',
+                `-P${this._peripheralPath}`,
+                '-b115200',
+                '-D',
+                `-Uflash:w:${firmwarePath}:i`
             ]);
 
             avrdude.stderr.on('data', buf => {
