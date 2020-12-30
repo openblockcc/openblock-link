@@ -19,6 +19,7 @@ class SerialportSession extends Session {
         this.connectStateDetectorTimer = null;
         this.peripheralsScanorTimer = null;
         this.isRead = false;
+        this.isIndisconnect = false;
     }
 
     async didReceiveCall (method, params, completion) {
@@ -32,7 +33,7 @@ class SerialportSession extends Session {
             completion(null, null);
             break;
         case 'disconnect':
-            await this.disconnect(params);
+            await this.disconnect();
             completion(null, null);
             break;
         case 'write':
@@ -77,10 +78,6 @@ class SerialportSession extends Session {
                 this.onAdvertisementReceived(peripheral, filters);
             });
         }, 100);
-    }
-
-    searchByKey (map, route) {
-        return map[route] ? map[route] : null;
     }
 
     onAdvertisementReceived (peripheral, filters) {
@@ -174,16 +171,24 @@ class SerialportSession extends Session {
         }
     }
 
-    async write (params) {
-        const {message, encoding} = params;
-        const buffer = new Buffer.from(message, encoding);
+    write (params) {
+        return new Promise((resolve, reject) => {
+            const {message, encoding} = params;
+            const buffer = new Buffer.from(message, encoding);
 
-        this.peripheral.write(buffer, 'Buffer', err => {
-            if (err) {
-                return new Error(`Error while attempting to write: ${err.message}`);
+            try {
+                if (!this.isIndisconnect) {
+                    this.peripheral.write(buffer, 'Buffer', err => {
+                        if (err) {
+                            return reject(new Error(`Error while attempting to write: ${err.message}`));
+                        }
+                    });
+                    this.peripheral.drain(() => resolve(buffer.length));
+                }
+                return resolve();
+            } catch (err) {
+                return reject(err);
             }
-            return buffer.length;
-
         });
     }
 
@@ -192,18 +197,37 @@ class SerialportSession extends Session {
     }
 
     disconnect () {
-        if (this.peripheral && this.peripheral.isOpen === true) {
-            if (this.connectStateDetectorTimer) {
-                clearInterval(this.connectStateDetectorTimer);
-                this.connectStateDetectorTimer = null;
-            }
-            this.peripheral.close(error => {
-                if (error) {
-                    return new Error(error);
+        console.log('try disconnect');
+        this.isIndisconnect = true;
+        return new Promise((resolve, reject) => {
+            if (this.peripheral && this.peripheral.isOpen === true) {
+                if (this.connectStateDetectorTimer) {
+                    clearInterval(this.connectStateDetectorTimer);
+                    this.connectStateDetectorTimer = null;
                 }
-            });
-        }
+                const peripheral = this.peripheral;
+                try {
+                    peripheral.pause();
+                    // Wait for write finish prevent 'Error: Writing to COM port (GetOverlappedResult)'
+                    peripheral.drain(() => {
+                        peripheral.close(error => {
+                            if (error) {
+                                this.isIndisconnect = false;
+                                return reject(Error(error));
+                            }
+                            this.isIndisconnect = false;
+                            console.log('resolve');
+                            return resolve();
+                        });
+                    });
+                } catch (err) {
+                    this.isIndisconnect = false;
+                    return reject(err);
+                }
+            }
+        });
     }
+
     async upload (params) {
         const {message, config, encoding} = params;
         const code = new Buffer.from(message, encoding).toString();
@@ -212,12 +236,13 @@ class SerialportSession extends Session {
         switch (config.type) {
         case 'arduino':
             tool = new Arduino(this.peripheral.path, config, this.userDataPath,
-                this.toolsPath, this.sendstd.bind(this));
+                this.toolsPath, this.sendstd.bind(this), this.connect.bind(this),
+                this.disconnect.bind(this), this.peripheralParams, SerialPort.list);
 
             try {
                 const exitCode = await tool.build(code);
                 if (exitCode === 'Success') {
-                    this.disconnect();
+                    await this.disconnect();
                     await tool.flash();
                     await this.connect(this.peripheralParams, true);
                     this.sendRemoteRequest('uploadSuccess', {});
@@ -235,7 +260,6 @@ class SerialportSession extends Session {
     }
 
     async uploadFirmware (params) {
-        // console.log(params);
         let tool;
 
         switch (params.type) {
@@ -243,7 +267,7 @@ class SerialportSession extends Session {
             tool = new Arduino(this.peripheral.path, params, this.userDataPath,
                 this.toolsPath, this.sendstd.bind(this));
             try {
-                this.disconnect();
+                await this.disconnect();
                 await tool.flashRealtimeFirmware();
                 await this.connect(this.peripheralParams, true);
                 this.sendRemoteRequest('uploadSuccess', {});
