@@ -1,4 +1,4 @@
-const noble = require('noble');
+const noble = require('@abandonware/noble');
 const Session = require('./session');
 
 const getUUID = id => {
