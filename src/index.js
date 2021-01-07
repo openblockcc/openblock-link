@@ -45,7 +45,7 @@ class ScratchHWLink extends Emitter{
         super();
 
         if (userDataPath) {
-            this.userDataPath = userDataPath;
+            this.userDataPath = path.join(userDataPath, 'link');
         } else {
             this.userDataPath = DEFAULT_USER_DATA_PATH;
         }
