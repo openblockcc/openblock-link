@@ -15,7 +15,8 @@ class Arduino {
         sendstd, connect, disconnect, peripheralParams, list) {
         this._peripheralPath = peripheralPath;
         this._config = config;
-        this._tempfilePath = path.join(userDataPath, 'project/arduino');
+        this._userDataPath = userDataPath;
+        this._tempfilePath = path.join(userDataPath, 'arduino/project');
         this._arduinoPath = path.join(toolsPath, 'Arduino');
         this._sendstd = sendstd;
         this._connect = connect;
@@ -53,7 +54,7 @@ class Arduino {
                 '-tools', path.join(this._arduinoPath, 'tools-builder'),
                 '-tools', path.join(this._arduinoPath, 'hardware/tools/avr'),
                 '-libraries', path.join(this._arduinoPath, 'libraries'),
-                '-libraries', path.join(this._arduinoPath, 'thirdparty-libraries'),
+                '-libraries', path.join(this._userDataPath, '../extensions/libraries/Arduino'),
                 '-fqbn', this._config.fqbn,
                 '-build-path', path.join(this._tempfilePath, 'build'),
                 '-build-cache', path.join(this._tempfilePath, 'cache'),

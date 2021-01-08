@@ -197,7 +197,6 @@ class SerialportSession extends Session {
     }
 
     disconnect () {
-        console.log('try disconnect');
         this.isIndisconnect = true;
         return new Promise((resolve, reject) => {
             if (this.peripheral && this.peripheral.isOpen === true) {
@@ -216,7 +215,6 @@ class SerialportSession extends Session {
                                 return reject(Error(error));
                             }
                             this.isIndisconnect = false;
-                            console.log('resolve');
                             return resolve();
                         });
                     });
