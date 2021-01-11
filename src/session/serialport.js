@@ -178,7 +178,7 @@ class SerialportSession extends Session {
 
             try {
                 if (!this.isIndisconnect) {
-                    this.peripheral.write(buffer, 'Buffer', err => {
+                    this.peripheral.write(buffer, 'binary', err => {
                         if (err) {
                             return reject(new Error(`Error while attempting to write: ${err.message}`));
                         }

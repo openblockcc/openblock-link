@@ -47,27 +47,34 @@ class Arduino {
                 }
             });
 
-            const arduinoDebug = spawn(this._arduinoBuilderPath, [
+            const args = [
                 '-compile',
                 '-logger=human',
                 '-hardware', path.join(this._arduinoPath, 'hardware'),
                 '-tools', path.join(this._arduinoPath, 'tools-builder'),
                 '-tools', path.join(this._arduinoPath, 'hardware/tools/avr'),
                 '-libraries', path.join(this._arduinoPath, 'libraries'),
-                '-libraries', path.join(this._userDataPath, '../extensions/libraries/Arduino'),
                 '-fqbn', this._config.fqbn,
                 '-build-path', path.join(this._tempfilePath, 'build'),
                 '-build-cache', path.join(this._tempfilePath, 'cache'),
                 '-warnings=none',
                 '-verbose',
                 this._codefilePath
-            ]);
+            ];
 
-            arduinoDebug.stderr.on('data', buf => {
+            // if extensions libraries exists add it to args
+            const extensionsLibraries = path.join(this._userDataPath, '../extensions/libraries/Arduino');
+            if (fs.existsSync(extensionsLibraries)) {
+                args.splice(6, 0, '-libraries', extensionsLibraries);
+            }
+
+            const arduinoBuilder = spawn(this._arduinoBuilderPath, args);
+
+            arduinoBuilder.stderr.on('data', buf => {
                 this._sendstd(ansi.red + buf.toString());
             });
 
-            arduinoDebug.stdout.on('data', buf => {
+            arduinoBuilder.stdout.on('data', buf => {
                 const data = buf.toString();
                 let ansiColor = null;
 
@@ -79,7 +86,7 @@ class Arduino {
                 this._sendstd(ansiColor + data);
             });
 
-            arduinoDebug.on('exit', outCode => {
+            arduinoBuilder.on('exit', outCode => {
                 this._sendstd(`${ansi.clear}\r\n`); // End ansi color setting
                 switch (outCode) {
                 case 0:
