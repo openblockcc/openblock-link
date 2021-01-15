@@ -1,2 +1,8 @@
-/node_modules
-/tools/Arduino
+# npm file
+node_modules/
+
+# Mac
+.DS_Store
+
+# Binary tools
+tools/Arduino

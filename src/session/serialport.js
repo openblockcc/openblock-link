@@ -83,7 +83,7 @@ class SerialportSession extends Session {
     onAdvertisementReceived (peripheral, filters) {
         if (peripheral) {
             peripheral.forEach(device => {
-                const pnpid = device.pnpId.substring(0, 21);
+                const pnpid = `USB\\VID_${device.vendorId}&PID_${device.productId}`;
 
                 const name = usbId[pnpid] ? usbId[pnpid] : 'Unknown device';
 
