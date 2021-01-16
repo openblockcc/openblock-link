@@ -1,4 +1,4 @@
-const ScratchHWLink = require('./index');
+const OpenBlockLink = require('./index');
 
-const link = new ScratchHWLink();
+const link = new OpenBlockLink();
 link.listen();

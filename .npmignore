@@ -12,4 +12,4 @@
 /coverage
 
 # Exclude already built packages from testing with npm pack
-/scratchhw-link-*.{tar,tgz}
+/openblock-link-*.{tar,tgz}

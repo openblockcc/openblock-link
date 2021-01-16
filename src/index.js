@@ -8,7 +8,7 @@ const path = require('path');
  * Configuration the default user data path. Just for debug.
  * @readonly
  */
-const DEFAULT_USER_DATA_PATH = path.join(__dirname, '../../.scratchhwData');
+const DEFAULT_USER_DATA_PATH = path.join(__dirname, '../../.openblockData');
 
 /**
  * Configuration the default tools path.
@@ -35,9 +35,9 @@ const ROUTERS = {
  * @class A server to provide local hardware api.
  * @augments EventEmitter
  */
-class ScratchHWLink extends Emitter{
+class OpenBlockLink extends Emitter{
     /**
-     * Construct a ScratchHW link server object.
+     * Construct a OpenBlock link server object.
      * @param {string} userDataPath - the path to save user data.
      * @param {string} toolsPath - the path of build and flash tools.
      */
@@ -98,4 +98,4 @@ class ScratchHWLink extends Emitter{
     }
 }
 
-module.exports = ScratchHWLink;
+module.exports = OpenBlockLink;

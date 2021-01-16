@@ -1,7 +1,7 @@
 {
-  "name": "scratchhw-link",
+  "name": "openblock-link",
   "version": "0.1.0-beta",
-  "description": "Porvide local hardware function to scratchhw",
+  "description": "Porvide local hardware function to openblock",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/server.js",
@@ -11,10 +11,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ScratchHW/scratchhw-link.git"
+    "url": "git+https://github.com/openblockcc/openblock-link.git"
   },
   "keywords": [
-    "scratchhw",
+    "openblock",
     "link",
     "microbit",
     "arduino",
@@ -23,12 +23,12 @@
     "ble",
     "serialport"
   ],
-  "author": "ScratchHW Team",
+  "author": "OpenBlock Team",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ScratchHW/scratchhw-link/issues"
+    "url": "https://github.com/openblockcc/openblock-link/issues"
   },
-  "homepage": "https://github.com/ScratchHW/scratchhw-link#readme",
+  "homepage": "https://github.com/openblockcc/openblock-link#readme",
   "dependencies": {
     "ansi-string": "^0.2.1",
     "install": "^0.13.0",
