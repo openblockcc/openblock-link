@@ -40,6 +40,10 @@ class Arduino {
             if (!fs.existsSync(this._projectPath)) {
                 fs.mkdirSync(this._projectPath, {recursive: true});
             }
+            // creat this folder to arduino-builder report can not find cache
+            if (!fs.existsSync(path.join(this._tempfilePath, 'cache'))) {
+                fs.mkdirSync(path.join(this._tempfilePath, 'cache'), {recursive: true});
+            }
 
             fs.writeFile(this._codefilePath, code, err => {
                 if (err) {
