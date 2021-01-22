@@ -1,6 +1,7 @@
 const SerialPort = require('serialport');
 const Session = require('./session');
 const Arduino = require('../upload/arduino');
+const Microbit = require('../upload/microbit');
 const ansi = require('ansi-string');
 const usbId = require('../lib/usb-id');
 
@@ -252,7 +253,16 @@ class SerialportSession extends Session {
             }
             break;
         case 'microbit':
-            // todo: for Microbit
+            tool = new Microbit(this.peripheral.path, config, this.userDataPath,
+                this.toolsPath, this.sendstd.bind(this));
+            try {
+                await tool.flash(code);
+                this.sendRemoteRequest('uploadSuccess', {});
+            } catch (err) {
+                this.sendRemoteRequest('uploadError', {
+                    message: ansi.red + err.message
+                });
+            }
             break;
         }
     }

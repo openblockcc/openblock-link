@@ -6,3 +6,4 @@ node_modules/
 
 # Binary tools
 tools/Arduino
+tools/Python
