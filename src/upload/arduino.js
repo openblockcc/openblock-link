@@ -210,7 +210,7 @@ class Arduino {
     }
 
     flashRealtimeFirmware () {
-        const firmwarePath = path.join(this._arduinoPath, '../RealtimeFirmware', firmware[this._config.fqbn]);
+        const firmwarePath = path.join(this._arduinoPath, '../RealtimeFirmware/arduino', firmware[this._config.fqbn]);
         return this.flash(firmwarePath);
     }
 }

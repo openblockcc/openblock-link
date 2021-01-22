@@ -11,5 +11,8 @@
 /.nyc_output
 /coverage
 
+# Exclude tools
+/tools
+
 # Exclude already built packages from testing with npm pack
 /openblock-link-*.{tar,tgz}

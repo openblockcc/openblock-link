@@ -5,5 +5,4 @@ node_modules/
 .DS_Store
 
 # Binary tools
-tools/Arduino
-tools/Python
+tools/
