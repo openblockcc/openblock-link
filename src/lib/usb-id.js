@@ -6,7 +6,7 @@ const usbId = {
     // FT232
     'USB\\VID_0403&PID_6001': 'USB-SERIAL FT232',
     // CP2102
-    'USB\\VID_10C4&PID_EA61': 'USB-SERIAL CP2102',
+    'USB\\VID_10C4&PID_EA60': 'USB-SERIAL CP2102',
     // Arduino Uno
     'USB\\VID_2341&PID_0043': 'Arduino UNO',
     'USB\\VID_2341&PID_0001': 'Arduino UNO',
