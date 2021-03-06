@@ -85,7 +85,7 @@ class Arduino {
                 if (data.search(/Sketch uses|Global variables/g) === -1) {
                     ansiColor = ansi.clear;
                 } else {
-                    ansiColor = ansi.green;
+                    ansiColor = ansi.green_dark;
                 }
                 this._sendstd(ansiColor + data);
             });
@@ -171,7 +171,7 @@ class Arduino {
                 // todo: Because the feacture of avrdude sends STD information intermittently.
                 // There should be a better way to handle these mesaage.
                 if (data.search(AVRDUDE_STDOUT_GREEN_START) != -1) { // eslint-disable-line eqeqeq
-                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_GREEN_START), ansi.green);
+                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_GREEN_START), ansi.green_dark);
                 }
                 if (data.search(AVRDUDE_STDOUT_GREEN_END) != -1) { // eslint-disable-line eqeqeq
                     data = this._insertStr(data, data.search(AVRDUDE_STDOUT_GREEN_END) + 1, ansi.clear);

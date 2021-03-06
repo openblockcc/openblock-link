@@ -256,12 +256,16 @@ class SerialportSession extends Session {
             tool = new Microbit(this.peripheral.path, config, this.userDataPath,
                 this.toolsPath, this.sendstd.bind(this));
             try {
+                await this.disconnect();
                 await tool.flash(code);
+                await this.connect(this.peripheralParams, true);
+                await this.write({message: '04', encoding: 'hex'});
                 this.sendRemoteRequest('uploadSuccess', {});
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
                     message: ansi.red + err.message
                 });
+                this.sendRemoteRequest('peripheralUnplug', {});
             }
             break;
         }
