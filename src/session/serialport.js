@@ -37,6 +37,9 @@ class SerialportSession extends Session {
             await this.disconnect();
             completion(null, null);
             break;
+        case 'updateBaudrate':
+            completion(await this.updateBaudrate(params), null);
+            break;
         case 'write':
             completion(await this.write(params), null);
             break;
@@ -170,6 +173,19 @@ class SerialportSession extends Session {
         if (this.isRead) {
             this.sendRemoteRequest('onMessage', params);
         }
+    }
+
+    updateBaudrate (params) {
+        return new Promise((resolve, reject) => {
+            if (!this.isIndisconnect) {
+                this.peripheral.update(params, err => {
+                    if (err) {
+                        return reject(new Error(`Error while attempting to update baudrate: ${err.message}`));
+                    }
+                    return resolve();
+                });
+            }
+        });
     }
 
     write (params) {
