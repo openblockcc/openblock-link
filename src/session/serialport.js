@@ -178,6 +178,7 @@ class SerialportSession extends Session {
     updateBaudrate (params) {
         return new Promise((resolve, reject) => {
             if (!this.isIndisconnect) {
+                this.peripheralParams.peripheralConfig.config.baudRate = params.baudRate;
                 this.peripheral.update(params, err => {
                     if (err) {
                         return reject(new Error(`Error while attempting to update baudrate: ${err.message}`));
