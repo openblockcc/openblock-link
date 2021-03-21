@@ -1,8 +1,9 @@
 const SerialPort = require('serialport');
+const ansi = require('ansi-string');
+
 const Session = require('./session');
 const Arduino = require('../upload/arduino');
 const Microbit = require('../upload/microbit');
-const ansi = require('ansi-string');
 const usbId = require('../lib/usb-id');
 
 class SerialportSession extends Session {

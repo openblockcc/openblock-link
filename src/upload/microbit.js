@@ -30,11 +30,11 @@ class Microbit {
             fs.mkdirSync(this._projectPath, {recursive: true});
         }
 
-        fs.writeFile(this._codefilePath, code, err => {
-            if (err) {
-                return Promise.reject(err);
-            }
-        });
+        try {
+            fs.writeFileSync(this._codefilePath, code);
+        } catch (err) {
+            return Promise.reject(err);
+        }
 
         fileToPut.push(this._codefilePath);
 

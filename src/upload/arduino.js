@@ -2,6 +2,9 @@ const fs = require('fs');
 const {spawn} = require('child_process');
 const path = require('path');
 const ansi = require('ansi-string');
+const osLocale = require('os-locale');
+const iconv = require('iconv-lite');
+
 const firmware = require('../lib/firmware');
 const usbId = require('../lib/usb-id');
 
@@ -45,8 +48,16 @@ class Arduino {
                 fs.mkdirSync(path.join(this._tempfilePath, 'cache'), {recursive: true});
             }
 
-            fs.writeFile(this._codefilePath, code, err => {
-                if (err) {
+            osLocale().then(locale => {
+                // if locale is zh-cn. Encode the data as gb2312 format,
+                // because it may contain Chinese characters
+                if (locale === 'zh-CN') {
+                    code = iconv.encode(code, 'gb2312');
+                }
+
+                try {
+                    fs.writeFileSync(this._codefilePath, code);
+                } catch (err) {
                     return reject(err);
                 }
             });
