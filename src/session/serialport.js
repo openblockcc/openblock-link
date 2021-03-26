@@ -276,8 +276,14 @@ class SerialportSession extends Session {
             try {
                 await this.disconnect();
                 await tool.flash(code);
+
+                const _baudRate = this.peripheralParams.peripheralConfig.config.baudRate;
                 await this.connect(this.peripheralParams, true);
+                await this.updateBaudrate({baudRate: 115200});
+                this.sendstd(`${ansi.clear}Reset device\n`);
                 await this.write({message: '04', encoding: 'hex'});
+                await this.updateBaudrate({baudRate: _baudRate});
+
                 this.sendRemoteRequest('uploadSuccess', {});
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
