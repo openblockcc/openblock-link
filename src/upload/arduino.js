@@ -28,6 +28,7 @@ class Arduino {
         this._list = list;
 
         this._leonardoPath = null;
+        this._makeymakeyPath = null;
 
         this._arduinoBuilderPath = path.join(this._arduinoPath, 'arduino-builder');
         this._avrdudePath = path.join(this._arduinoPath, 'hardware/tools/avr/bin/avrdude');
@@ -158,9 +159,46 @@ class Arduino {
         });
     }
 
+    // Leonardo require open and close serialport as 1200 baudrate to enter the bootloader
+    async makeymakey () {
+        const peripheralParams = this._peripheralParams;
+        peripheralParams.peripheralConfig.config.baudRate = 1200;
+
+        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Open and close the serialport.
+        await this._connect(peripheralParams, true);
+        await wait(100);
+        await this._disconnect();
+        await wait(1000);
+
+        return new Promise((resolve, reject) => {
+            // Scan the new serialport path. The path will change on windows.
+            this._list().then(peripheral => {
+                if (peripheral) {
+                    peripheral.forEach(device => {
+                        const pnpid = device.pnpId.substring(0, 21);
+
+                        const name = usbId[pnpid] ? usbId[pnpid] : 'Unknown device';
+                        if (name === 'Makey Makey') {
+                            this._makeymakeyPath = device.path;
+                        }
+                    });
+                    if (this._makeymakeyPath === null) {
+                        return reject(new Error('cannot discover makeymakey'));
+                    }
+                    return resolve();
+                }
+                return reject(new Error('cannot discover makeymakey'));
+            });
+        });
+    }
+
     async flash (firmwarePath = null) {
         if (this._config.fqbn === 'arduino:avr:leonardo') {
             await this.leonardo();
+        } else if (this._config.fqbn === 'SparkFun:avr:makeymakey') {
+            await this.makeymakey();
         }
 
         return new Promise((resolve, reject) => {
@@ -170,7 +208,7 @@ class Arduino {
                 '-v',
                 `-p${this._config.partno}`,
                 `-c${this._config.programmerId}`,
-                this._leonardoPath ? `-P${this._leonardoPath}` : `-P${this._peripheralPath}`,
+                this._leonardoPath ? `-P${this._leonardoPath}` : (this._makeymakeyPath ? `-P${this._makeymakeyPath}` : `-P${this._peripheralPath}`),
                 `-b${this._config.baudrate}`,
                 '-D',
                 firmwarePath ? `-Uflash:w:${firmwarePath}:i` : `-Uflash:w:${this._hexPath}:i`
@@ -206,6 +244,10 @@ class Arduino {
                 switch (code) {
                 case 0:
                     if (this._config.fqbn === 'arduino:avr:leonardo') {
+                        // Waiting for leonardo usb rerecognize.
+                        const wait = ms => new Promise(relv => setTimeout(relv, ms));
+                        wait(1000).then(() => resolve('Success'));
+                    } else if (this._config.fqbn === 'SparkFun:avr:makeymakey') {
                         // Waiting for leonardo usb rerecognize.
                         const wait = ms => new Promise(relv => setTimeout(relv, ms));
                         wait(1000).then(() => resolve('Success'));

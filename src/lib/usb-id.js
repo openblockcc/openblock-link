@@ -25,7 +25,10 @@ const usbId = {
     'USB\\VID_2A03&PID_0036': 'Arduino Leonardo',
     'USB\\VID_2A03&PID_8036': 'Arduino Leonardo',
     // Microbit
-    'USB\\VID_0D28&PID_0204': 'Microbit'
+    'USB\\VID_0D28&PID_0204': 'Microbit',
+    // Makey Makey
+    'USB\\VID_1B4F&PID_2B74': 'Makey Makey',
+    'USB\\VID_1B4F&PID_2B75': 'Makey Makey'
 };
 
 module.exports = usbId;
