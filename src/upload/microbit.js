@@ -2,6 +2,7 @@ const fs = require('fs');
 const {spawn} = require('child_process');
 const path = require('path');
 const ansi = require('ansi-string');
+const os = require('os');
 
 class Microbit {
     constructor (peripheralPath, config, userDataPath, toolsPath, sendstd) {
@@ -12,9 +13,15 @@ class Microbit {
         this._pythonPath = path.join(toolsPath, 'Python');
         this._sendstd = sendstd;
 
-        this._pyPath = path.join(this._pythonPath, 'python');
-        this._uflashPath = path.join(this._pythonPath, 'Scripts/uflash-script.py');
-        this._ufsPath = path.join(this._pythonPath, 'Scripts/ufs-script.py');
+        if (os.platform() === 'darwin') {
+            this._pyPath = path.join(this._pythonPath, 'bin/python');
+            this._uflashPath = path.join(this._pythonPath, 'bin/uflash');
+            this._ufsPath = path.join(this._pythonPath, 'bin/ufs');
+        } else {
+            this._pyPath = path.join(this._pythonPath, 'python');
+            this._uflashPath = path.join(this._pythonPath, 'Scripts/uflash-script.py');
+            this._ufsPath = path.join(this._pythonPath, 'Scripts/ufs-script.py');
+        }
 
         this._codefilePath = path.join(this._projectPath, 'main.py');
     }
