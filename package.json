@@ -33,9 +33,9 @@
   "dependencies": {
     "@abandonware/noble": "^1.9.2-10",
     "ansi-string": "^0.2.1",
-    "download-github-release": "^0.3.2",
     "iconv-lite": "^0.6.2",
     "install": "^0.13.0",
+    "js-yaml": "^4.0.0",
     "os-locale": "^5.0.0",
     "serialport": "^9.0.1",
     "ws": "^7.1.1",
@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
+    "download-github-release": "^0.3.2",
     "eslint": "^5.3.0",
     "eslint-config-scratch": "^5.0.0"
   }

@@ -30,7 +30,7 @@ class Microbit {
         return soure.slice(0, start) + newStr + soure.slice(start);
     }
 
-    async flash (code) {
+    async flash (code, library) {
         const fileToPut = [];
 
         if (!fs.existsSync(this._projectPath)) {
@@ -45,13 +45,14 @@ class Microbit {
 
         fileToPut.push(this._codefilePath);
 
-        const extensionsLibraries = path.join(this._userDataPath, '../extensions/libraries/Microbit');
-        if (fs.existsSync(extensionsLibraries)) {
-            const libraries = fs.readdirSync(extensionsLibraries);
-            libraries.forEach(file => {
-                fileToPut.push(path.join(extensionsLibraries, file));
-            });
-        }
+        library.forEach(lib => {
+            if (fs.existsSync(lib)) {
+                const libraries = fs.readdirSync(lib);
+                libraries.forEach(file => {
+                    fileToPut.push(path.join(lib, file));
+                });
+            }
+        });
 
         const ufsTestExitCode = await this.ufsTestFirmware();
         if (ufsTestExitCode === 'Failed') {

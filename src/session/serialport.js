@@ -248,7 +248,7 @@ class SerialportSession extends Session {
     }
 
     async upload (params) {
-        const {message, config, encoding} = params;
+        const {message, config, encoding, library} = params;
         const code = new Buffer.from(message, encoding).toString();
         let tool;
 
@@ -259,7 +259,7 @@ class SerialportSession extends Session {
                 this.disconnect.bind(this), this.peripheralParams, SerialPort.list);
 
             try {
-                const exitCode = await tool.build(code);
+                const exitCode = await tool.build(code, library);
                 if (exitCode === 'Success') {
                     await this.disconnect();
                     await tool.flash();
@@ -277,7 +277,7 @@ class SerialportSession extends Session {
                 this.toolsPath, this.sendstd.bind(this));
             try {
                 await this.disconnect();
-                await tool.flash(code);
+                await tool.flash(code, library);
 
                 const _baudRate = this.peripheralParams.peripheralConfig.config.baudRate;
                 await this.connect(this.peripheralParams, true);
