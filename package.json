@@ -6,6 +6,7 @@
   "scripts": {
     "postinstall": "node script/download-tools.js && node script/download-realtime-firmware.js",
     "start": "node src/server.js",
+    "clean": "rimraf ../.openblockData/link tools firmware",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint ./src",
     "test": ""
@@ -45,6 +46,8 @@
     "babel-eslint": "^10.0.1",
     "download-github-release": "^0.3.2",
     "eslint": "^5.3.0",
-    "eslint-config-scratch": "^5.0.0"
+    "eslint-config-scratch": "^5.0.0",
+    "jsdoc": "^3.6.6",
+    "rimraf": "^3.0.2"
   }
 }

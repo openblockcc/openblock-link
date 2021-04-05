@@ -175,15 +175,22 @@ class Arduino {
             await this.leonardo();
         }
 
+        const args = [
+            'upload',
+            '--fqbn', this._config.fqbn,
+            '--verbose',
+            '--verify',
+            this._leonardoPath ? `-p${this._leonardoPath}` : `-p${this._peripheralPath}`
+        ];
+
+        if (firmwarePath) {
+            args.push('--input-file', firmwarePath);
+        } else {
+            args.push(this._projectfilePath);
+        }
+
         return new Promise((resolve, reject) => {
-            const avrdude = spawn(this._arduinoCliPath, [
-                'upload',
-                '--fqbn', this._config.fqbn,
-                '--verbose',
-                '--verify',
-                this._leonardoPath ? `-p${this._leonardoPath}` : `-p${this._peripheralPath}`,
-                firmwarePath ? firmwarePath : this._projectfilePath
-            ]);
+            const avrdude = spawn(this._arduinoCliPath, args);
 
             avrdude.stderr.on('data', buf => {
                 let data = buf.toString();
@@ -230,7 +237,7 @@ class Arduino {
     }
 
     flashRealtimeFirmware () {
-        const firmwarePath = path.join(this._arduinoPath, '../RealtimeFirmware/arduino', firmware[this._config.fqbn]);
+        const firmwarePath = path.join(this._arduinoPath, '../../firmware/arduino', firmware[this._config.fqbn]);
         return this.flash(firmwarePath);
     }
 }
