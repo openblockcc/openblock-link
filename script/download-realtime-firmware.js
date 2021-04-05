@@ -1,7 +1,6 @@
 /* eslint-disable */
 const downloadRelease = require('download-github-release');
 const path = require('path');
-const os = require('os');
 const fs = require('fs');
 
 const user = 'openblockcc';
