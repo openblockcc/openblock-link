@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "postinstall": "node script/download-tools.js && node script/download-realtime-firmware.js",
-    "start": "node src/server.js",
+    "start": "rimraf ../.openblockData/link && node src/server.js",
     "clean": "rimraf ../.openblockData/link tools firmware",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint ./src",
