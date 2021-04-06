@@ -83,6 +83,8 @@ class Arduino {
                 '--libraries', path.join(this._arduinoPath, 'libraries'),
                 '--build-path', path.join(this._projectfilePath, 'build'),
                 '--build-cache-path', path.join(this._projectfilePath, 'cache'),
+                '--output-dir', path.join(this._projectfilePath, 'output'),
+                '-e',
                 '--warnings=none',
                 '--verbose',
                 this._codefilePath
@@ -186,7 +188,7 @@ class Arduino {
         if (firmwarePath) {
             args.push('--input-file', firmwarePath);
         } else {
-            args.push(this._projectfilePath);
+            args.push('--input-dir', path.join(this._projectfilePath, 'output'));
         }
 
         return new Promise((resolve, reject) => {
