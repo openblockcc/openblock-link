@@ -15,8 +15,8 @@ class Microbit {
 
         if (os.platform() === 'darwin') {
             this._pyPath = path.join(this._pythonPath, 'bin/python');
-            this._uflashPath = path.join(this._pythonPath, 'bin/uflash');
-            this._ufsPath = path.join(this._pythonPath, 'bin/ufs');
+            this._uflashPath = path.join(this._pythonPath, 'lib/python3.9/site-packages/uflash.py');
+            this._ufsPath = path.join(this._pythonPath, 'lib/python3.9/site-packages/microfs.py');
         } else {
             this._pyPath = path.join(this._pythonPath, 'python');
             this._uflashPath = path.join(this._pythonPath, 'Scripts/uflash-script.py');
