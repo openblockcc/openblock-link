@@ -30,7 +30,7 @@ class Microbit {
         return soure.slice(0, start) + newStr + soure.slice(start);
     }
 
-    async flash (code, library) {
+    async flash (code, library = []) {
         const fileToPut = [];
 
         if (!fs.existsSync(this._projectPath)) {

@@ -37,7 +37,7 @@ class Arduino {
         this._hexPath = path.join(this._buildPath, 'arduino.ino.hex');
     }
 
-    build (code, library) {
+    build (code, library = []) {
         return new Promise((resolve, reject) => {
             if (!fs.existsSync(this._buildPath)) {
                 fs.mkdirSync(this._buildPath, {recursive: true});
