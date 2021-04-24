@@ -7,7 +7,6 @@ const iconv = require('iconv-lite');
 const yaml = require('js-yaml');
 
 const firmware = require('../lib/firmware');
-const usbId = require('../lib/usb-id');
 
 const AVRDUDE_STDOUT_GREEN_START = /Reading \||Writing \|/g;
 const AVRDUDE_STDOUT_GREEN_END = /%/g;
@@ -15,18 +14,13 @@ const AVRDUDE_STDOUT_WHITE = /avrdude done/g;
 const AVRDUDE_STDOUT_RED_START = /can't open device|programmer is not responding/g;
 
 class Arduino {
-    constructor (peripheralPath, config, userDataPath, toolsPath,
-        sendstd, connect, disconnect, peripheralParams, list) {
+    constructor (peripheralPath, config, userDataPath, toolsPath, sendstd) {
         this._peripheralPath = peripheralPath;
         this._config = config;
         this._userDataPath = userDataPath;
         this._projectfilePath = path.join(userDataPath, 'arduino/project');
         this._arduinoPath = path.join(toolsPath, 'Arduino');
         this._sendstd = sendstd;
-        this._connect = connect;
-        this._disconnect = disconnect;
-        this._peripheralParams = peripheralParams;
-        this._list = list;
 
         this._leonardoPath = null;
 
@@ -35,6 +29,26 @@ class Arduino {
         this._codefilePath = path.join(this._projectfilePath, 'project.ino');
         this._buildPath = path.join(this._projectfilePath, 'build');
         this._hexPath = path.join(this._buildPath, 'arduino.ino.hex');
+
+        this.initArduinoCli();
+    }
+
+    initArduinoCli () {
+        // try to init the arduino cli config.
+        spawnSync(this._arduinoCliPath, ['config', 'init']);
+
+        // if arduino cli config haven be init, set it to link arduino path.
+        const buf = spawnSync(this._arduinoCliPath, ['config', 'dump']);
+        const stdout = yaml.load(buf.stdout.toString());
+
+        if (stdout.directories.data !== this._arduinoPath) {
+            this._sendstd(`${ansi.yellow_dark}arduino cli config has not been initialized yet.\n`);
+            this._sendstd(`${ansi.green_dark}set the path to ${this._arduinoPath}.\n`);
+            spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.data', this._arduinoPath]);
+            spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.downloads',
+                path.join(this._arduinoPath, 'staging')]);
+            spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.user', this._arduinoPath]);
+        }
     }
 
     build (code, library = []) {
@@ -45,22 +59,6 @@ class Arduino {
             // creat this folder to arduino-builder report can not find cache
             if (!fs.existsSync(path.join(this._projectfilePath, 'cache'))) {
                 fs.mkdirSync(path.join(this._projectfilePath, 'cache'), {recursive: true});
-            }
-
-            // try to init the arduino cli config.
-            spawnSync(this._arduinoCliPath, ['config', 'init']);
-
-            // if arduino cli config haven be init, set it to link arduino path.
-            const buf = spawnSync(this._arduinoCliPath, ['config', 'dump']);
-            const stdout = yaml.load(buf.stdout.toString());
-
-            if (stdout.directories.data !== this._arduinoPath) {
-                this._sendstd(`${ansi.yellow_dark}arduino cli config has not been initialized yet.\n`);
-                this._sendstd(`${ansi.green_dark}set the path to ${this._arduinoPath}.\n`);
-                spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.data', this._arduinoPath]);
-                spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.downloads',
-                    path.join(this._arduinoPath, 'staging')]);
-                spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.user', this._arduinoPath]);
             }
 
             osLocale().then(locale => {
@@ -137,52 +135,14 @@ class Arduino {
         return soure.slice(0, start) + newStr + soure.slice(start);
     }
 
-    // Leonardo require open and close serialport as 1200 baudrate to enter the bootloader
-    async leonardo () {
-        const peripheralParams = this._peripheralParams;
-        peripheralParams.peripheralConfig.config.baudRate = 1200;
-
-        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-        // Open and close the serialport.
-        await this._connect(peripheralParams, true);
-        await wait(100);
-        await this._disconnect();
-        await wait(1000);
-
-        return new Promise((resolve, reject) => {
-            // Scan the new serialport path. The path will change on windows.
-            this._list().then(peripheral => {
-                if (peripheral) {
-                    peripheral.forEach(device => {
-                        const pnpid = device.pnpId.substring(0, 21);
-
-                        const name = usbId[pnpid] ? usbId[pnpid] : 'Unknown device';
-                        if (name === 'Arduino Leonardo') {
-                            this._leonardoPath = device.path;
-                        }
-                    });
-                    if (this._leonardoPath === null) {
-                        return reject(new Error('cannot discover leonardo'));
-                    }
-                    return resolve();
-                }
-                return reject(new Error('cannot discover leonardo'));
-            });
-        });
-    }
-
     async flash (firmwarePath = null) {
-        if (this._config.fqbn === 'arduino:avr:leonardo') {
-            await this.leonardo();
-        }
 
         const args = [
             'upload',
             '--fqbn', this._config.fqbn,
             '--verbose',
             '--verify',
-            this._leonardoPath ? `-p${this._leonardoPath}` : `-p${this._peripheralPath}`
+            `-p${this._peripheralPath}`
         ];
 
         if (firmwarePath) {

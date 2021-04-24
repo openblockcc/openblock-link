@@ -59,7 +59,7 @@ class SerialportSession extends Session {
             break;
         case 'pingMe':
             completion('willPing', null);
-            this.sendRemoteRequest('ping', null, (result, error) => {
+            this.sendRemoteRequest('ping', null, result => {
                 console.log(`Got result from ping: ${result}`);
             });
             break;
@@ -137,7 +137,7 @@ class SerialportSession extends Session {
                 port.open(error => {
                     if (error) {
                         if (afterUpload === true) {
-                            this.sendRemoteRequest('peripheralUnplug', {});
+                            this.sendRemoteRequest('peripheralUnplug', null);
                         }
                         return reject(new Error(error));
                     }
@@ -150,7 +150,7 @@ class SerialportSession extends Session {
                         if (this.peripheral.isOpen === false) {
                             clearInterval(this.connectStateDetectorTimer);
                             this.disconnect();
-                            this.sendRemoteRequest('peripheralUnplug', {});
+                            this.sendRemoteRequest('peripheralUnplug', null);
                         }
                     }, 10);
 
@@ -193,6 +193,7 @@ class SerialportSession extends Session {
     }
 
     write (params) {
+        console.log('write=', params);
         return new Promise((resolve, reject) => {
             const {message, encoding} = params;
             const buffer = new Buffer.from(message, encoding);
@@ -255,8 +256,7 @@ class SerialportSession extends Session {
         switch (config.type) {
         case 'arduino':
             tool = new Arduino(this.peripheral.path, config, this.userDataPath,
-                this.toolsPath, this.sendstd.bind(this), this.connect.bind(this),
-                this.disconnect.bind(this), this.peripheralParams, SerialPort.list);
+                this.toolsPath, this.sendstd.bind(this));
 
             try {
                 const exitCode = await tool.build(code, library);
@@ -264,7 +264,7 @@ class SerialportSession extends Session {
                     await this.disconnect();
                     await tool.flash();
                     await this.connect(this.peripheralParams, true);
-                    this.sendRemoteRequest('uploadSuccess', {});
+                    this.sendRemoteRequest('uploadSuccess', null);
                 }
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
@@ -286,12 +286,12 @@ class SerialportSession extends Session {
                 await this.write({message: '04', encoding: 'hex'});
                 await this.updateBaudrate({baudRate: _baudRate});
 
-                this.sendRemoteRequest('uploadSuccess', {});
+                this.sendRemoteRequest('uploadSuccess', null);
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
                     message: ansi.red + err.message
                 });
-                this.sendRemoteRequest('peripheralUnplug', {});
+                this.sendRemoteRequest('peripheralUnplug', null);
             }
             break;
         }
@@ -308,7 +308,7 @@ class SerialportSession extends Session {
                 await this.disconnect();
                 await tool.flashRealtimeFirmware();
                 await this.connect(this.peripheralParams, true);
-                this.sendRemoteRequest('uploadSuccess', {});
+                this.sendRemoteRequest('uploadSuccess', null);
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
                     message: ansi.red + err.message
@@ -319,9 +319,11 @@ class SerialportSession extends Session {
     }
 
     sendstd (message) {
-        this.sendRemoteRequest('uploadStdout', {
-            message: message
-        });
+        if (this._socket) {
+            this.sendRemoteRequest('uploadStdout', {
+                message: message
+            });
+        }
     }
 
     dispose () {
