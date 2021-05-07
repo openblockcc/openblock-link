@@ -261,10 +261,18 @@ class SerialportSession extends Session {
             try {
                 const exitCode = await tool.build(code, library);
                 if (exitCode === 'Success') {
-                    await this.disconnect();
-                    await tool.flash();
-                    await this.connect(this.peripheralParams, true);
-                    this.sendRemoteRequest('uploadSuccess', null);
+                    try {
+                        await this.disconnect();
+                        await tool.flash();
+                        await this.connect(this.peripheralParams, true);
+                        this.sendRemoteRequest('uploadSuccess', null);
+                    } catch (err) {
+                        this.sendRemoteRequest('uploadError', {
+                            message: ansi.red + err.message
+                        });
+                        // if error in flash step. It is considered that the device has been removed.
+                        this.sendRemoteRequest('peripheralUnplug', null);
+                    }
                 }
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
