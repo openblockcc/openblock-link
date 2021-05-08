@@ -3,6 +3,8 @@ const firmware = {
     'arduino:avr:uno': 'arduinoUno.standardFirmata.hex',
     // Arduino Nano
     'arduino:avr:nano:cpu=atmega328': 'arduinoUno.standardFirmata.hex',
+    // Arduino Mini
+    'arduino:avr:mini:cpu=atmega328': 'arduinoUno.standardFirmata.hex',
     // Arduino Leonardo
     'arduino:avr:leonardo': 'arduinoLeonardo.standardFirmata.hex',
     // Arduino Mega 2560

@@ -2,6 +2,7 @@ const fs = require('fs');
 const {spawn} = require('child_process');
 const path = require('path');
 const ansi = require('ansi-string');
+const os = require('os');
 
 class Microbit {
     constructor (peripheralPath, config, userDataPath, toolsPath, sendstd) {
@@ -12,9 +13,15 @@ class Microbit {
         this._pythonPath = path.join(toolsPath, 'Python');
         this._sendstd = sendstd;
 
-        this._pyPath = path.join(this._pythonPath, 'python');
-        this._uflashPath = path.join(this._pythonPath, 'Scripts/uflash-script.py');
-        this._ufsPath = path.join(this._pythonPath, 'Scripts/ufs-script.py');
+        if (os.platform() === 'darwin') {
+            this._pyPath = path.join(this._pythonPath, 'bin/python');
+            this._uflashPath = path.join(this._pythonPath, 'lib/python3.9/site-packages/uflash.py');
+            this._ufsPath = path.join(this._pythonPath, 'lib/python3.9/site-packages/microfs.py');
+        } else {
+            this._pyPath = path.join(this._pythonPath, 'python');
+            this._uflashPath = path.join(this._pythonPath, 'Scripts/uflash-script.py');
+            this._ufsPath = path.join(this._pythonPath, 'Scripts/ufs-script.py');
+        }
 
         this._codefilePath = path.join(this._projectPath, 'main.py');
     }
@@ -23,7 +30,7 @@ class Microbit {
         return soure.slice(0, start) + newStr + soure.slice(start);
     }
 
-    async flash (code) {
+    async flash (code, library = []) {
         const fileToPut = [];
 
         if (!fs.existsSync(this._projectPath)) {
@@ -38,13 +45,14 @@ class Microbit {
 
         fileToPut.push(this._codefilePath);
 
-        const extensionsLibraries = path.join(this._userDataPath, '../extensions/libraries/Microbit');
-        if (fs.existsSync(extensionsLibraries)) {
-            const libraries = fs.readdirSync(extensionsLibraries);
-            libraries.forEach(file => {
-                fileToPut.push(path.join(extensionsLibraries, file));
-            });
-        }
+        library.forEach(lib => {
+            if (fs.existsSync(lib)) {
+                const libraries = fs.readdirSync(lib);
+                libraries.forEach(file => {
+                    fileToPut.push(path.join(lib, file));
+                });
+            }
+        });
 
         const ufsTestExitCode = await this.ufsTestFirmware();
         if (ufsTestExitCode === 'Failed') {

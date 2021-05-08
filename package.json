@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "postinstall": "node script/download-tools.js && node script/download-realtime-firmware.js",
-    "start": "node src/server.js",
+    "start": "rimraf ../.openblockData/link && node src/server.js",
+    "clean": "rimraf ../.openblockData/link tools firmware",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint ./src",
     "test": ""
@@ -36,6 +37,7 @@
     "download-github-release": "^0.3.2",
     "iconv-lite": "^0.6.2",
     "install": "^0.13.0",
+    "js-yaml": "^4.0.0",
     "os-locale": "^5.0.0",
     "serialport": "^9.0.1",
     "ws": "^7.1.1",
@@ -44,6 +46,8 @@
   "devDependencies": {
     "babel-eslint": "^10.0.1",
     "eslint": "^5.3.0",
-    "eslint-config-scratch": "^5.0.0"
+    "eslint-config-scratch": "^5.0.0",
+    "jsdoc": "^3.6.6",
+    "rimraf": "^3.0.2"
   }
 }

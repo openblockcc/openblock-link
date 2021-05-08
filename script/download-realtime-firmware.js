@@ -1,12 +1,11 @@
 /* eslint-disable */
 const downloadRelease = require('download-github-release');
 const path = require('path');
-const os = require('os');
 const fs = require('fs');
 
 const user = 'openblockcc';
 const repo = 'openblock-realtime-firmware';
-const outputdir = path.join(__dirname, '../tools/RealtimeFirmware');
+const outputdir = path.join(__dirname, '../firmware');
 const leaveZipped = false;
 
 function filterRelease (release) {
