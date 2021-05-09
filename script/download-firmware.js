@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 const user = 'openblockcc';
-const repo = 'openblock-realtime-firmware';
+const repo = 'openblock-firmware';
 const outputdir = path.join(__dirname, '../firmware');
 const leaveZipped = false;
 
@@ -22,7 +22,7 @@ if (!fs.existsSync(outputdir)) {
 
 downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)
     .then(() => {
-        console.log('Realtime firmware download complete');
+        console.log('Firmware download complete');
     })
     .catch(err => {
         console.error(err.message);
