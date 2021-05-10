@@ -124,7 +124,7 @@ class Microbit {
             if (version === 1) {
                 uflash = spawn(this._pyPath, [this._uflashPath]);
             } else if (version === 2) {
-                const v2FirmwarePath = path.join(this._pythonPath, '../../firmware/microbit',
+                const v2FirmwarePath = path.join(this._pythonPath, '../../firmwares/microbit',
                     'micropython-microbit-v2.0.0-beta.5.hex');
 
                 uflash = spawn(this._pyPath, [this._uflashPath, '-r', v2FirmwarePath]);

@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const user = 'openblockcc';
 const repo = 'openblock-tools';
-const outputdir = path.join(__dirname, '../tools');
+const outputdir = path.resolve('./tools');
 const leaveZipped = false;
 
 function filterRelease (release) {

@@ -4,8 +4,8 @@ const path = require('path');
 const fs = require('fs');
 
 const user = 'openblockcc';
-const repo = 'openblock-firmware';
-const outputdir = path.join(__dirname, '../firmware');
+const repo = 'openblock-firmwares';
+const outputdir = path.join(__dirname, '../firmwares');
 const leaveZipped = false;
 
 function filterRelease (release) {
@@ -22,7 +22,7 @@ if (!fs.existsSync(outputdir)) {
 
 downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)
     .then(() => {
-        console.log('Firmware download complete');
+        console.log('Firmwares download complete');
     })
     .catch(err => {
         console.error(err.message);
