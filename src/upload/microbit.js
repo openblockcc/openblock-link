@@ -4,6 +4,8 @@ const path = require('path');
 const ansi = require('ansi-string');
 const os = require('os');
 
+const FLASH_TIME = 30 * 1000; // 30s
+
 class Microbit {
     constructor (peripheralPath, config, userDataPath, toolsPath, sendstd, deviceType) {
         this._peripheralPath = peripheralPath;
@@ -131,6 +133,19 @@ class Microbit {
             this._sendstd(`${ansi.green_dark}Start flash firmware...\n`);
             this._sendstd(`${ansi.clear}This step will take tens of seconds, pelese wait\n`);
 
+            // Add finish flasg to solve uflash will exit immediately after start, nut not exit
+            // after flash finish. So add a counter flag in order to ensure that enough time has
+            // been spent to finish burning and uflash runs successfully.
+            let finishFlag = 0;
+            const finish = () => {
+                finishFlag += 1;
+                if (finishFlag === 2) {
+                    this._sendstd(`${ansi.green_dark}Flash Success.\n`);
+                    return resolve('Success');
+                }
+            };
+            setTimeout(finish, FLASH_TIME);
+
             uflash.stdout.on('data', buf => {
                 this._sendstd(buf.toString());
             });
@@ -142,8 +157,8 @@ class Microbit {
             uflash.on('exit', outCode => {
                 switch (outCode) {
                 case 0:
-                    this._sendstd(`${ansi.green_dark}Flash Success.\n`);
-                    return resolve('Success');
+                    finish();
+                    break;
                 case 1:
                     return reject(new Error('uflash failed to flash'));
                 }
