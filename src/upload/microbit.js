@@ -4,7 +4,7 @@ const path = require('path');
 const ansi = require('ansi-string');
 const os = require('os');
 
-const FLASH_TIME = 30 * 1000; // 30s
+const FLASH_TIME = 25 * 1000; // 20s
 
 class Microbit {
     constructor (peripheralPath, config, userDataPath, toolsPath, sendstd, deviceType) {
