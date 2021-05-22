@@ -6,8 +6,6 @@ const osLocale = require('os-locale');
 const iconv = require('iconv-lite');
 const yaml = require('js-yaml');
 
-const firmware = require('../lib/firmware');
-
 const AVRDUDE_STDOUT_GREEN_START = /Reading \||Writing \|/g;
 const AVRDUDE_STDOUT_GREEN_END = /%/g;
 const AVRDUDE_STDOUT_WHITE = /avrdude done/g;
@@ -199,7 +197,7 @@ class Arduino {
     }
 
     flashRealtimeFirmware () {
-        const firmwarePath = path.join(this._arduinoPath, '../../firmwares/arduino', firmware[this._config.fqbn]);
+        const firmwarePath = path.join(this._arduinoPath, '../../firmwares/arduino', this._config.firmware);
         return this.flash(firmwarePath);
     }
 }

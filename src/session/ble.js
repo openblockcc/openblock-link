@@ -56,7 +56,7 @@ class BLESession extends Session {
             break;
         case 'pingMe':
             completion('willPing', null);
-            this.sendRemoteRequest('ping', null, (result, error) => {
+            this.sendRemoteRequest('ping', null, result => {
                 console.log(`Got result from ping: ${result}`);
             });
             break;
@@ -160,7 +160,7 @@ class BLESession extends Session {
                         resolve();
                     });
                 });
-                peripheral.on('disconnect', err => {
+                peripheral.on('disconnect', () => {
                     this.disconnect();
                 });
             } catch (err) {
