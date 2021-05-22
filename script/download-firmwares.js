@@ -1,20 +1,15 @@
-/* eslint-disable */
 const downloadRelease = require('download-github-release');
 const path = require('path');
 const fs = require('fs');
 
 const user = 'openblockcc';
 const repo = 'openblock-firmwares';
-const outputdir = path.join(__dirname, '../firmwares');
+const outputdir = path.resolve('./firmwares');
 const leaveZipped = false;
 
-function filterRelease (release) {
-    return release.prerelease === false;
-}
+const filterRelease = release => release.prerelease === false;
 
-function filterAsset() {
-    return true;
-}
+const filterAsset = () => true;
 
 if (!fs.existsSync(outputdir)) {
     fs.mkdirSync(outputdir, {recursive: true});
