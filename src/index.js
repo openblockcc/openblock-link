@@ -32,8 +32,7 @@ const ROUTERS = {
 };
 
 /**
- * @class A server to provide local hardware api.
- * @augments EventEmitter
+ * A server to provide local hardware api.
  */
 class OpenBlockLink extends Emitter{
     /**

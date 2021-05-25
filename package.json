@@ -4,7 +4,7 @@
   "description": "Porvide local hardware function to openblock",
   "main": "src/index.js",
   "scripts": {
-    "fetch": "node script/download-tools.js && node script/download-firmwares.js",
+    "fetch": "rimraf tools firmwares && node script/download-tools.js && node script/download-firmwares.js",
     "start": "rimraf ../.openblockData/link && node src/server.js",
     "clean": "rimraf ../.openblockData/link tools firmwares",
     "docs": "jsdoc -c .jsdoc.json",
