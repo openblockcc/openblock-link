@@ -78,7 +78,11 @@ class OpenBlockLink extends Emitter{
             };
             socket.on('close', dispose);
             socket.on('error', dispose);
-        });
+        })
+            .on('error', e => {
+                const info = `Error while trying to listen port ${this._socketPort}: ${e}`;
+                console.warn(info);
+            });
     }
 
     /**
