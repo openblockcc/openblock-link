@@ -2,8 +2,6 @@ const fs = require('fs');
 const {spawn, spawnSync} = require('child_process');
 const path = require('path');
 const ansi = require('ansi-string');
-const osLocale = require('os-locale');
-const iconv = require('iconv-lite');
 const yaml = require('js-yaml');
 
 const AVRDUDE_STDOUT_GREEN_START = /Reading \||Writing \|/g;
@@ -57,19 +55,11 @@ class Arduino {
                 fs.mkdirSync(path.join(this._projectfilePath, 'cache'), {recursive: true});
             }
 
-            osLocale().then(locale => {
-                // if locale is zh-cn. Encode the data as gb2312 format,
-                // because it may contain Chinese characters
-                if (locale === 'zh-CN') {
-                    code = iconv.encode(code, 'gb2312');
-                }
-
-                try {
-                    fs.writeFileSync(this._codefilePath, code);
-                } catch (err) {
-                    return reject(err);
-                }
-            });
+            try {
+                fs.writeFileSync(this._codefilePath, code);
+            } catch (err) {
+                return reject(err);
+            }
 
             const args = [
                 'compile',
