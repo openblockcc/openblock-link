@@ -11,6 +11,6 @@ npm start
 Thanks to all these great people it has been possible to make this project:
 * [OpenBlock](https://github.com/openblockcc)
 * [openblock-link-desktop](https://github.com/openblockcc/openblock-link-desktop)
-* [OpenBlock-link](https://github.com/openblockcc/openblock-link)
-* [OpenBlock-tools](https://github.com/openblockcc/openblock-tools)
-* [OpenBlock-firmware](https://github.com/openblockcc/openblock-firmwares)
+* [openblock-link](https://github.com/openblockcc/openblock-link)
+* [openblock-tools](https://github.com/openblockcc/openblock-tools)
+* [openblock-firmware](https://github.com/openblockcc/openblock-firmwares)

@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, nativeImage } = require('electron');
 const path = require('path');
 const electron = require('electron');
 
-const OpenBlockLink = require('./server');
+const ScratchArduinoLink = require('./server');
 
 const fs = require('fs');
 const compareVersions = require('compare-versions');
@@ -63,7 +63,7 @@ function createWindow() {
     } else {
         toolsPath = path.join(appPath, "../tools");
     }
-    const link = new OpenBlockLink(dataPath, toolsPath);
+    const link = new ScratchArduinoLink(dataPath, toolsPath);
     link.listen();
 
     const trayMenuTemplate = [

@@ -169,14 +169,7 @@ class Arduino {
             avrdude.on('exit', code => {
                 switch (code) {
                 case 0:
-                    if (this._config.fqbn === 'arduino:avr:leonardo' || this._config.fqbn === 'SparkFun:avr:makeymakey') {
-                        // Waiting for leonardo usb rerecognize.
-                        const wait = ms => new Promise(relv => setTimeout(relv, ms));
-                        wait(1000).then(() => resolve('Success'));
-                    } else {
-                        return resolve('Success');
-                    }
-                    break;
+                    return resolve('Success');
                 case 1:
                     return reject(new Error('avrdude failed to flash'));
                 }

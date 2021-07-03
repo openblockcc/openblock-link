@@ -27,9 +27,9 @@ const ROUTERS = {
 /**
  * A server to provide local hardware api.
  */
-class OpenBlockLink extends Emitter{
+class ScratchArduinoLink extends Emitter{
     /**
-     * Construct a OpenBlock link server object.
+     * Construct a Scratch Arduino link server object.
      * @param {string} userDataPath - the path to save user data.
      * @param {string} toolsPath - the path of build and flash tools.
      */
@@ -92,4 +92,4 @@ class OpenBlockLink extends Emitter{
     }
 }
 
-module.exports = OpenBlockLink;
+module.exports = ScratchArduinoLink;

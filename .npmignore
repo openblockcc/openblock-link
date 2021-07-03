@@ -11,9 +11,5 @@
 /.nyc_output
 /coverage
 
-# Exclude tools
-/tools
-/firmwares
-
 # Exclude already built packages from testing with npm pack
 /scratch-arduino-link-*.{tar,tgz}

@@ -1,4 +1,4 @@
-const OpenBlockLink = require('./server');
+const ScratchArduinoLink = require('./server');
 
-const link = new OpenBlockLink();
+const link = new ScratchArduinoLink();
 link.listen();

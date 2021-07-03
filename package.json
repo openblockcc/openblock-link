@@ -6,14 +6,14 @@
   "scripts": {
     "start": "electron .",
     "build": "rimraf dist && electron-builder",
-    "clean": "rimraf ../.openblockData/link dist",
+    "clean": "rimraf dist",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint ./src",
     "test": ""
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openblockcc/scratch-arduino-link.git"
+    "url": "git+https://github.com/ottawastem/scratch-arduino-link.git"
   },
   "keywords": [
     "scratch-arduino",
@@ -23,12 +23,12 @@
     "scratch3.0",
     "serialport"
   ],
-  "author": "OpenBlock Team",
+  "author": "Ottawa STEM Club",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/openblockcc/scratch-arduino-link/issues"
+    "url": "https://github.com/ottawastem/scratch-arduino-link/issues"
   },
-  "homepage": "https://github.com/openblockcc/scratch-arduino-link#readme",
+  "homepage": "https://github.com/ottawastem/scratch-arduino-link#readme",
   "dependencies": {
     "ansi-string": "^0.2.1",
     "compare-versions": "^3.6.0",
