@@ -1,11 +1,15 @@
-.app{
+body  {
+    background-color: #4D97FF;
+}
+
+.app {
     color: white;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: bold;
     text-align: center;
 }
 
-.logo{
+.logo {
     max-width: 7rem;
     max-height: 7rem;
     display: table-cell;
@@ -13,18 +17,16 @@
     margin: auto;
 }
 
-.info{
+.info {
     margin: 1.5rem;
     text-align: center;
 }
 
-.foot{
+.foot {
     display: inline-block;
-    /* text-align: center; */
 }
 
-.foot-logo{
+.foot-logo {
     max-width: 2rem;
     max-height: 2rem;
-    /* float: left; */
 }
