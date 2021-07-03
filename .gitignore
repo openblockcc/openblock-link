@@ -1,3 +1,6 @@
+# VS Code Eidtor Environment
+.vscode/
+
 # npm file
 node_modules/
 
@@ -7,3 +10,4 @@ node_modules/
 # Binary tools
 tools/
 firmwares/
+dist/

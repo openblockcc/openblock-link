@@ -3,7 +3,6 @@ const ansi = require('ansi-string');
 
 const Session = require('./session');
 const Arduino = require('../upload/arduino');
-const Microbit = require('../upload/microbit');
 const usbId = require('../lib/usb-id');
 
 class SerialportSession extends Session {
@@ -278,29 +277,6 @@ class SerialportSession extends Session {
                 this.sendRemoteRequest('uploadError', {
                     message: ansi.red + err.message
                 });
-            }
-            break;
-        case 'microbitV2':
-        case 'microbit':
-            tool = new Microbit(this.peripheral.path, config, this.userDataPath,
-                this.toolsPath, this.sendstd.bind(this), config.type);
-            try {
-                await this.disconnect();
-                await tool.flash(code, library);
-
-                const _baudRate = this.peripheralParams.peripheralConfig.config.baudRate;
-                await this.connect(this.peripheralParams, true);
-                await this.updateBaudrate({baudRate: 115200});
-                this.sendstd(`${ansi.clear}Reset device\n`);
-                await this.write({message: '04', encoding: 'hex'});
-                await this.updateBaudrate({baudRate: _baudRate});
-
-                this.sendRemoteRequest('uploadSuccess', null);
-            } catch (err) {
-                this.sendRemoteRequest('uploadError', {
-                    message: ansi.red + err.message
-                });
-                this.sendRemoteRequest('peripheralUnplug', null);
             }
             break;
         }
