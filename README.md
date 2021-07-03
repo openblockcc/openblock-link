@@ -1,5 +1,5 @@
-# openblock-link
-![](https://img.shields.io/travis/com/openblockcc/openblock-link) ![](https://img.shields.io/github/license/openblockcc/openblock-link)
+# scratch-arduino-link
+![](https://img.shields.io/travis/com/openblockcc/scratch-arduino-link) ![](https://img.shields.io/github/license/openblockcc/scratch-arduino-link)
 
 ### Instructions
 ```bash

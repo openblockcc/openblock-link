@@ -16,7 +16,7 @@ let mainWindow;
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-        icon: path.join(__dirname, './icon/OpenBlock-Link.ico'),
+        icon: path.join(__dirname, './icon/scratch-arduino-link.ico'),
         width: 400,
         height: 400,
         center: true,
@@ -66,42 +66,23 @@ function createWindow() {
     const link = new OpenBlockLink(dataPath, toolsPath);
     link.listen();
 
-    // let extensionsPath;
-    // if (appPath.search(/app.asar/g) === -1) {
-    //     extensionsPath = path.join(appPath, "extensions");
-    // } else {
-    //     extensionsPath = path.join(appPath, "../extensions");
-    // }
-    // const extension = new OpenBlockExtension(dataPath, extensionsPath);
-    // extension.listen();
-
-    // let devicesPath;
-    // if (appPath.search(/app.asar/g) === -1) {
-    //     devicesPath = path.join(appPath, "devices");
-    // } else {
-    //     devicesPath = path.join(appPath, "../devices");
-    // }
-    // const device = new OpenBlockDevice(dataPath, devicesPath);
-    // device.listen();
-
     const trayMenuTemplate = [
         {
-            label: 'help',
+            label: 'Help',
             click: function () {}
         },
         {
-            label: 'exit',
+            label: 'Exit',
             click: function () {
                 appTray.destroy();
                 mainWindow.destroy();
             }
         }
-        // TODO: Add a button to clear cthe cache in app path.
     ];
  
-    appTray = new Tray(nativeImage.createFromPath(path.join(__dirname, './icon/OpenBlock-Link.ico')));
+    appTray = new Tray(nativeImage.createFromPath(path.join(__dirname, './icon/scratch-arduino-link.ico')));
     const contextMenu = Menu.buildFromTemplate(trayMenuTemplate);
-    appTray.setToolTip('OpenBlock Link');
+    appTray.setToolTip('Scratch Arudino Link');
     appTray.setContextMenu(contextMenu);
     
     appTray.on('click',function(){
@@ -144,4 +125,3 @@ app.on('activate', function () {
         createWindow();
     }
 })
-

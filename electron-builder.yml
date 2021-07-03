@@ -3,12 +3,12 @@ directories:
   output: dist
 extraResources: ["tools", "firmwares"]
 
-appId: 'openblock.cc.openblock-link-desktop'
+appId: 'scratch-arduino.cc.scratch-arduino-link-desktop'
 productName: "OpenBlock Link"
 publish: # empty provider list = don't publish
 
 win:
-  icon: buildResources/OpenBlock-Link.ico
+  icon: buildResources/scratch-arduino-link.ico
   target:
     # - appx
     - nsis

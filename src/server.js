@@ -5,12 +5,6 @@ const Emitter = require('events');
 const path = require('path');
 
 /**
- * Configuration the default user data path. Just for debug.
- * @readonly
- */
-const DEFAULT_USER_DATA_PATH = path.join(__dirname, '../../.openblockData');
-
-/**
  * Configuration the default tools path.
  * @readonly
  */
@@ -44,8 +38,6 @@ class OpenBlockLink extends Emitter{
 
         if (userDataPath) {
             this.userDataPath = path.join(userDataPath, 'link');
-        } else {
-            this.userDataPath = path.join(DEFAULT_USER_DATA_PATH, 'link');
         }
 
         if (toolsPath) {
