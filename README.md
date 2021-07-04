@@ -9,8 +9,8 @@ npm start
 
 # Attribution
 Thanks to all these great people it has been possible to make this project:
-* [OpenBlock](https://github.com/openblockcc)
-* [openblock-link-desktop](https://github.com/openblockcc/openblock-link-desktop)
-* [openblock-link](https://github.com/openblockcc/openblock-link)
-* [openblock-tools](https://github.com/openblockcc/openblock-tools)
-* [openblock-firmware](https://github.com/openblockcc/openblock-firmwares)
+* [OpenBlock](https://github.com/ottawastem)
+* [openblock-link-desktop](https://github.com/ottawastem/openblock-link-desktop)
+* [openblock-link](https://github.com/ottawastem/openblock-link)
+* [openblock-tools](https://github.com/ottawastem/openblock-tools)
+* [openblock-firmware](https://github.com/ottawastem/openblock-firmwares)

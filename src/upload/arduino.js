@@ -122,7 +122,6 @@ class Arduino {
     }
 
     async flash (firmwarePath = null) {
-
         const args = [
             'upload',
             '--fqbn', this._config.fqbn,

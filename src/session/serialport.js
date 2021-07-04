@@ -81,7 +81,7 @@ class SerialportSession extends Session {
             SerialPort.list().then(peripheral => {
                 this.onAdvertisementReceived(peripheral, filters);
             });
-        }, 100);
+        }, 1000);
     }
 
     onAdvertisementReceived (peripheral, filters) {
@@ -151,7 +151,7 @@ class SerialportSession extends Session {
                             this.disconnect();
                             this.sendRemoteRequest('peripheralUnplug', null);
                         }
-                    }, 10);
+                    }, 1000);
 
                     // Only when the receiver function is set, can isopen detect that the device is pulled out
                     // A strange features of npm serialport package
@@ -283,12 +283,12 @@ class SerialportSession extends Session {
     }
 
     async uploadFirmware (params) {
+        console.log('uploadFirmware', params);
         let tool;
 
         switch (params.type) {
         case 'arduino':
-            tool = new Arduino(this.peripheral.path, params, this.userDataPath,
-                this.toolsPath, this.sendstd.bind(this));
+            tool = new Arduino(this.peripheral.path, params, this.userDataPath, this.toolsPath, this.sendstd.bind(this));
             try {
                 await this.disconnect();
                 await tool.flashRealtimeFirmware();
