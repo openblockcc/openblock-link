@@ -1,0 +1,32 @@
+body  {
+    background-color: #4D97FF;
+}
+
+.app {
+    color: white;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    text-align: center;
+}
+
+.logo {
+    max-width: 7rem;
+    max-height: 7rem;
+    display: table-cell;
+    text-align: center;
+    margin: auto;
+}
+
+.info {
+    margin: 1.5rem;
+    text-align: center;
+}
+
+.foot {
+    display: inline-block;
+}
+
+.foot-logo {
+    max-width: 2rem;
+    max-height: 2rem;
+}

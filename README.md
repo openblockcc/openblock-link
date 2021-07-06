@@ -1,11 +1,12 @@
-# openblock-link
-![](https://img.shields.io/travis/com/openblockcc/openblock-link) ![](https://img.shields.io/github/license/openblockcc/openblock-link)
+# Scratch Arduino Link
+![](https://img.shields.io/travis/com/OttawaSTEM/scratch-arduino-link?color=success) ![](https://img.shields.io/github/license/OttawaSTEM/scratch-arduino-link)
 
 ### Instructions
 ```bash
 npm install
-npm run fetch
 npm start
 ```
 
-If you work on windows and want to use BLE connection check this instructions: [https://github.com/noble/noble](https://github.com/noble/noble)
+# Attribution
+Thanks to all these great people it has been possible to make this project:
+* [OpenBlock](https://github.com/openblockcc)

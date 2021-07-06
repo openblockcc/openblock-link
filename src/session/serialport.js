@@ -3,7 +3,6 @@ const ansi = require('ansi-string');
 
 const Session = require('./session');
 const Arduino = require('../upload/arduino');
-const Microbit = require('../upload/microbit');
 const usbId = require('../lib/usb-id');
 
 class SerialportSession extends Session {
@@ -82,7 +81,7 @@ class SerialportSession extends Session {
             SerialPort.list().then(peripheral => {
                 this.onAdvertisementReceived(peripheral, filters);
             });
-        }, 100);
+        }, 1000);
     }
 
     onAdvertisementReceived (peripheral, filters) {
@@ -152,7 +151,7 @@ class SerialportSession extends Session {
                             this.disconnect();
                             this.sendRemoteRequest('peripheralUnplug', null);
                         }
-                    }, 10);
+                    }, 1000);
 
                     // Only when the receiver function is set, can isopen detect that the device is pulled out
                     // A strange features of npm serialport package
@@ -280,39 +279,16 @@ class SerialportSession extends Session {
                 });
             }
             break;
-        case 'microbitV2':
-        case 'microbit':
-            tool = new Microbit(this.peripheral.path, config, this.userDataPath,
-                this.toolsPath, this.sendstd.bind(this), config.type);
-            try {
-                await this.disconnect();
-                await tool.flash(code, library);
-
-                const _baudRate = this.peripheralParams.peripheralConfig.config.baudRate;
-                await this.connect(this.peripheralParams, true);
-                await this.updateBaudrate({baudRate: 115200});
-                this.sendstd(`${ansi.clear}Reset device\n`);
-                await this.write({message: '04', encoding: 'hex'});
-                await this.updateBaudrate({baudRate: _baudRate});
-
-                this.sendRemoteRequest('uploadSuccess', null);
-            } catch (err) {
-                this.sendRemoteRequest('uploadError', {
-                    message: ansi.red + err.message
-                });
-                this.sendRemoteRequest('peripheralUnplug', null);
-            }
-            break;
         }
     }
 
     async uploadFirmware (params) {
+        console.log('uploadFirmware', params);
         let tool;
 
         switch (params.type) {
         case 'arduino':
-            tool = new Arduino(this.peripheral.path, params, this.userDataPath,
-                this.toolsPath, this.sendstd.bind(this));
+            tool = new Arduino(this.peripheral.path, params, this.userDataPath, this.toolsPath, this.sendstd.bind(this));
             try {
                 await this.disconnect();
                 await tool.flashRealtimeFirmware();

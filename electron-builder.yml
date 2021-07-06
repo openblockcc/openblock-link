@@ -1,0 +1,38 @@
+directories:
+  buildResources: buildResources
+  output: dist
+extraResources: ["tools", "firmwares"]
+
+appId: 'ottawastem.com.scratch-arduino-link'
+productName: "Scratch Arduino Link"
+publish: # empty provider list = don't publish
+
+win:
+  icon: buildResources/scratch-arduino-link.ico
+  target:
+    - nsis
+
+nsis:
+  oneClick: false # allow user to choose per-user or per-machine
+  allowToChangeInstallationDirectory: true
+  artifactName: "Scratch Arduino Link ${version} Setup.${ext}"
+  deleteAppDataOnUninstall: true
+
+mac:  # Manual delte app data after uninstall
+  category: public.app-category.education
+  entitlements: buildResources/entitlements.mac.plist
+  extendInfo:
+    NSCameraUsageDescription: >-
+        This app requires camera access when taking a photo in the paint editor or using the video sensing blocks.
+    NSMicrophoneUsageDescription: >-
+        This app requires microphone access when recording sounds or detecting loudness.
+  gatekeeperAssess: true
+  hardenedRuntime: true
+  icon: buildResources/ScratchDesktop.icns
+  provisioningProfile: embedded.provisionprofile
+  artifactName: "Scratch Arduino Link ${version}.${ext}"
+  target:
+    - dmg
+
+dmg:
+  title: "Scratch Arduino Link ${version}"

@@ -1,50 +1,50 @@
 {
-  "name": "openblock-link",
+  "name": "scratch-arduino-link",
   "version": "0.1.0-beta",
-  "description": "Porvide local hardware function to openblock",
-  "main": "src/index.js",
+  "description": "Porvide local hardware function to scratch-arduino",
+  "main": "src/main.js",
   "scripts": {
-    "fetch": "rimraf tools firmwares && node script/download-tools.js && node script/download-firmwares.js",
-    "start": "rimraf ../.openblockData/link && node src/server.js",
-    "clean": "rimraf ../.openblockData/link tools firmwares",
+    "start": "electron .",
+    "build": "rimraf dist && electron-builder",
+    "clean": "rimraf dist",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint ./src",
     "test": ""
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openblockcc/openblock-link.git"
+    "url": "git+https://github.com/ottawastem/scratch-arduino-link.git"
   },
   "keywords": [
-    "openblock",
+    "scratch-arduino",
     "link",
-    "microbit",
     "arduino",
     "nodejs",
     "scratch3.0",
-    "ble",
     "serialport"
   ],
-  "author": "OpenBlock Team",
+  "author": "Ottawa STEM Club",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/openblockcc/openblock-link/issues"
+    "url": "https://github.com/ottawastem/scratch-arduino-link/issues"
   },
-  "homepage": "https://github.com/openblockcc/openblock-link#readme",
+  "homepage": "https://github.com/ottawastem/scratch-arduino-link#readme",
   "dependencies": {
-    "@abandonware/noble": "^1.9.2-10",
     "ansi-string": "^0.2.1",
+    "compare-versions": "^3.6.0",
+    "del": "^6.0.0",
     "download-github-release": "^0.3.2",
     "install": "^0.13.0",
     "js-yaml": "^4.0.0",
-    "serialport": "^9.0.1",
-    "ws": "^7.1.1",
-    "wss": "^3.3.4"
+    "serialport": "^9.2.0",
+    "ws": "^7.1.1"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
+    "cpy-cli": "^3.1.1",
+    "electron": "^13.1.5",
+    "electron-builder": "^22.11.7",
     "eslint": "^5.3.0",
-    "eslint-config-scratch": "^5.0.0",
     "jsdoc": "^3.6.6",
     "rimraf": "^3.0.2"
   }
