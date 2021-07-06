@@ -11,5 +11,10 @@
 /.nyc_output
 /coverage
 
+# Arduino packages
+/firmwares
+/tools
+/dist
+
 # Exclude already built packages from testing with npm pack
 /scratch-arduino-link-*.{tar,tgz}
