@@ -42,7 +42,6 @@ jobs:
         uses: dawidd6/action-get-tag@v1
 
       - name: Github Release
-        run: echo "GIT_TAG=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
