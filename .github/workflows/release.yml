@@ -15,19 +15,20 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2    
-      - name: Use Node.js ${{ matrix.node-version }}   
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - run: npm install
-      - run: npm run build
+      - name: Build
+        uses: actions/checkout@v2    
+        - name: Use Node.js ${{ matrix.node-version }}   
+          uses: actions/setup-node@v2
+          with:
+            node-version: ${{ matrix.node-version }}
+            cache: 'npm'
+          run: npm install
+          run: npm run build
 
-    - name: Github Release
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
-      with:
-        name: Release V${{ github.run_number }}
-        files: "dist/Scratch Arduino Link 0.1.0*.*"
+      - name: Github Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
+        with:
+          name: Release V${{ github.run_number }}
+          files: "dist/Scratch Arduino Link 0.1.0*.*"
