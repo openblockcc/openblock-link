@@ -37,7 +37,7 @@ jobs:
         run: |
           npx rimraf "dist/!(*.dmg)"
           ls -al dist/
-          
+
       - name: Set version
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $RELEASE_VERSION
 
@@ -46,6 +46,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
         with:
-          files: "dist/scratch-arduino-link $RELEASE_VERSION*.*"
+          files: "dist/scratch-arduino-link ${{ RELEASE_VERSION}}*.*"
           name: Release V${{ RELEASE_VERSION }}
           tag_name: v${{ RELEASE_VERSION }}
