@@ -38,11 +38,14 @@ jobs:
           npx rimraf "dist/!(*.dmg)"
           ls -al dist/
 
+      - uses: olegtarasov/get-tag@v2.1
+        id: tagName
+
       - name: Github Release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
         with:
           files: "dist/Scratch Arduino Link *.*"
-          name: Release V0.1.0
-          tag_name: v0.1.0
+          name: Release V${{ steps.tagName.outputs.tag }}
+          tag_name: v${{ steps.tagName.outputs.tag }}
