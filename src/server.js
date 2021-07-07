@@ -21,6 +21,7 @@ const DEFAULT_PORT = 20111;
  * @readonly
  */
 const ROUTERS = {
+    '/status': require('./session/link'),
     '/scratch/serialport': require('./session/serialport') // eslint-disable-line global-require
 };
 
