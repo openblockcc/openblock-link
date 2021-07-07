@@ -15,7 +15,7 @@ win:
 nsis:
   oneClick: false # allow user to choose per-user or per-machine
   allowToChangeInstallationDirectory: true
-  artifactName: "Scratch Arduino Link ${version} Setup.${ext}"
+  artifactName: "scratch-arduino-link-${version}.${ext}"
   deleteAppDataOnUninstall: true
 
 mac:  # Manual delte app data after uninstall
@@ -35,4 +35,4 @@ mac:  # Manual delte app data after uninstall
     - dmg
 
 dmg:
-  title: "Scratch Arduino Link ${version}"
+  title: "scratch-arduino-link-${version}"
