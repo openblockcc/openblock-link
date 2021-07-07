@@ -34,14 +34,14 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: npx rimraf "dist/!(*.dmg)"
 
-      - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Set version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $RELEASE_VERSION
 
       - name: Github Release
         uses: softprops/action-gh-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET v${{ RELEASE_VERSION }}*.* }}
         with:
           files: "dist/scratch-arduino-link *"
-          name: Release V${{ GITHUB_ENV }}
-          tag_name: v${{ GITHUB_ENV }}
+          name: Release V${{ RELEASE_VERSION }}
+          tag_name: v${{ RELEASE_VERSION }}
