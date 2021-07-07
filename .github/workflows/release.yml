@@ -47,4 +47,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
       with:
-        files: "dist\**"
+        files: "dist/**"
