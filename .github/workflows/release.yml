@@ -41,3 +41,4 @@ jobs:
         with:
           files: "dist/**"
           name: Release V${{ github.run_number }}
+          tag_name: v${{ github.run_number }}
