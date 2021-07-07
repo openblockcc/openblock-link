@@ -38,6 +38,9 @@ jobs:
           npx rimraf "dist/!(*.dmg)"
           ls -al dist/
 
+      - name: Get tag
+        uses: dawidd6/action-get-tag@v1
+
       - name: Github Release
         run: echo "GIT_TAG=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_ENV
         uses: softprops/action-gh-release@v1
@@ -45,5 +48,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
         with:
           files: "dist/scratch-arduino-link *.*"
-          name: Release V${{ RELEASE_ENV }}
-          tag_name: v${{ RELEASE_ENV }}
+          name: Release V${{ steps.tag.outputs.tag }}
+          tag_name: v{{ steps.tag.outputs.tag }}
