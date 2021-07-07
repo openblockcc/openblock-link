@@ -18,9 +18,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - name: Get tag
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
@@ -47,5 +44,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
         with:
           files: "dist/Scratch Arduino Link *.*"
-          name: Release V${{ steps.vars.outputs.tag }}
-          tag_name: v{{ steps.vars.outputs.tag }}
+          name: Release V0.1.0
+          tag_name: v0.1.0
