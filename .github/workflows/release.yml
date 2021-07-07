@@ -33,7 +33,7 @@ jobs:
         dir dist
 
     - name: Cleanup Mac OS artifacts
-      if: matrix.os == 'windows-latest'
+      if: matrix.os == 'macos-latest'
       run: |
         npx rimraf "dist/!(*.dmg)"
         ls -al dist/
