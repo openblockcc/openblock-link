@@ -41,8 +41,5 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
       with:
-        if: matrix.os == 'win-latest'
-        files: "dist_electron/*.exe"
-        if: matrix.os == 'macos-latest'
-        files: "dist_electron/*.dmg"
+        files: "dist_electron/**"
         draft: true
