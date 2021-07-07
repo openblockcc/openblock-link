@@ -35,7 +35,7 @@ jobs:
         run: npx rimraf "dist/!(*.dmg)"
 
       - name: Github Release
-        uses: softprops/action-gh-release@v0.1.5
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
         with:
