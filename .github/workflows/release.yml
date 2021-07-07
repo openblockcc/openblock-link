@@ -28,17 +28,18 @@ jobs:
 
     - name: Cleanup Windows artifacts
       if: matrix.os == 'windows-latest'
-      run: npx rimraf "dist/!(*.exe)"
+      run: dir dist
+      # npx rimraf "dist/!(*.exe)"
 
-    - name: Cleanup Mac OS artifacts
-      if: matrix.os == 'windows-latest'
-      run: npx rimraf "dist/!(*.dmg)"
+    # - name: Cleanup Mac OS artifacts
+    #   if: matrix.os == 'windows-latest'
+    #   run: npx rimraf "dist/!(*.dmg)"
 
-    - name: Upload release artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: ${{ matrix.os }}
-        path: dist
+    # - name: Upload release artifacts
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: ${{ matrix.os }}
+    #     path: dist
 
     - name: Github Release
       uses: softprops/action-gh-release@v0.1.5
@@ -46,4 +47,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
       with:
-        files: "dist/**"
+        files: "dist\**"
