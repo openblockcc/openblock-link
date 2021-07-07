@@ -6,6 +6,7 @@
   "scripts": {
     "start": "electron .",
     "build": "rimraf dist && electron-builder",
+    "publish": "electron-forge publish",
     "clean": "rimraf dist",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint ./src",
