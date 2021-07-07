@@ -1,12 +1,11 @@
 {
   "name": "scratch-arduino-link",
-  "version": "0.1.0",
+  "version": "0.1.0-beta",
   "description": "Porvide local hardware function to scratch-arduino",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
     "build": "rimraf dist && electron-builder",
-    "publish": "electron-forge publish",
     "clean": "rimraf dist",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint ./src",
@@ -41,28 +40,12 @@
     "ws": "^7.1.1"
   },
   "devDependencies": {
-    "@electron-forge/publisher-github": "^6.0.0-beta.57",
     "babel-eslint": "^10.0.1",
     "cpy-cli": "^3.1.1",
-    "electron": "^13.1.5",
+    "electron": "^13.1.6",
     "electron-builder": "^22.11.7",
     "eslint": "^5.3.0",
     "jsdoc": "^3.6.6",
     "rimraf": "^3.0.2"
-  },
-  "config": {
-    "forge": {
-      "publishers": [
-        {
-          "name": "@electron-forge/publisher-github",
-          "config": {
-            "repository": {
-              "owner": "Ottawa STEM Club",
-              "name": "scratch-arduino-link"
-            }
-          }
-        }
-      ]
-    }
   }
 }
