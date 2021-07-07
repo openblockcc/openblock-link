@@ -5,8 +5,8 @@ name: Build and release for Win & Mac
 on:
   push:
     branches: [ main ]
-    tag:
-      - 'v*.*.*'
+    # tag:
+    #   - 'v*.*.*'
 
 jobs:
   release:
