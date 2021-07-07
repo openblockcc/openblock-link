@@ -25,45 +25,45 @@ class SerialportSession extends Session {
 
     async didReceiveCall (method, params, completion) {
         switch (method) {
-        case 'discover':
-            this.discover(params);
-            completion(null, null);
-            break;
-        case 'connect':
-            await this.connect(params);
-            completion(null, null);
-            break;
-        case 'disconnect':
-            await this.disconnect();
-            completion(null, null);
-            break;
-        case 'updateBaudrate':
-            completion(await this.updateBaudrate(params), null);
-            break;
-        case 'write':
-            completion(await this.write(params), null);
-            break;
-        case 'read':
-            await this.read(params);
-            completion(null, null);
-            break;
-        case 'upload':
-            completion(await this.upload(params), null);
-            break;
-        case 'uploadFirmware':
-            completion(await this.uploadFirmware(params), null);
-            break;
-        case 'getServices':
-            completion((this.services || []).map(service => service.uuid), null);
-            break;
-        case 'pingMe':
-            completion('willPing', null);
-            this.sendRemoteRequest('ping', null, result => {
-                console.log(`Got result from ping: ${result}`);
-            });
-            break;
-        default:
-            throw new Error(`Method not found`);
+            case 'discover':
+                this.discover(params);
+                completion(null, null);
+                break;
+            case 'connect':
+                await this.connect(params);
+                completion(null, null);
+                break;
+            case 'disconnect':
+                await this.disconnect();
+                completion(null, null);
+                break;
+            case 'updateBaudrate':
+                completion(await this.updateBaudrate(params), null);
+                break;
+            case 'write':
+                completion(await this.write(params), null);
+                break;
+            case 'read':
+                await this.read(params);
+                completion(null, null);
+                break;
+            case 'upload':
+                completion(await this.upload(params), null);
+                break;
+            case 'uploadFirmware':
+                completion(await this.uploadFirmware(params), null);
+                break;
+            case 'getServices':
+                completion((this.services || []).map(service => service.uuid), null);
+                break;
+            case 'pingMe':
+                completion('willPing', null);
+                this.sendRemoteRequest('ping', null, result => {
+                    console.log(`Got result from ping: ${result}`);
+                });
+                break;
+            default:
+                throw new Error(`Method not found`);
         }
     }
 
@@ -254,8 +254,7 @@ class SerialportSession extends Session {
 
         switch (config.type) {
         case 'arduino':
-            tool = new Arduino(this.peripheral.path, config, this.userDataPath,
-                this.toolsPath, this.sendstd.bind(this));
+            tool = new Arduino(this.peripheral.path, config, this.userDataPath, this.toolsPath, this.sendstd.bind(this));
 
             try {
                 const exitCode = await tool.build(code, library);
