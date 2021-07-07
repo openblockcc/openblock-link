@@ -42,4 +42,3 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
       with:
         files: "dist_electron/**"
-        draft: true
