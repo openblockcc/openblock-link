@@ -193,7 +193,6 @@ class SerialportSession extends Session {
     }
 
     write (params) {
-        console.log('write=', params);
         return new Promise((resolve, reject) => {
             const {message, encoding} = params;
             const buffer = new Buffer.from(message, encoding);
