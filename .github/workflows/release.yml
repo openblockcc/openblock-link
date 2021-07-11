@@ -28,15 +28,11 @@ jobs:
 
       - name: Cleanup Windows artifacts
         if: matrix.os == 'windows-latest'
-        run: |
-          npx rimraf "dist/!(*.exe)"
-          dir dist
+        run: npx rimraf "dist/!(*.exe)"
 
       - name: Cleanup Mac OS artifacts
         if: matrix.os == 'macos-latest'
-        run: |
-          npx rimraf "dist/!(*.dmg)"
-          ls -al dist/
+        run: npx rimraf "dist/!(*.dmg)"
 
       - uses: olegtarasov/get-tag@v2.1
         id: tagName
