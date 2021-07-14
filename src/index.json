@@ -4,13 +4,13 @@
             "os": "win",
             "description": "Arduino Tools for Windows",
             "version": "v1.0.0",
-            "fileName": "scratch-arduino-tools-win-v1.0.0.zip"
+            "fileName": "Scratch-Arduino-Tools-Win-v1.0.0.zip"
         },
         {
             "os": "mac",
             "description": "Arduino Tools for Mac OS",
             "version": "v1.0.0",
-            "fileName": "scratch-arduino-tools-mac-v1.0.0.dmg"
+            "fileName": "Scratch-Arduino-Tools-MacOS-v1.0.0.zip"
         }
     ],
     "firmwares": [
