@@ -80,7 +80,7 @@ class ScratchArduinoLink extends Emitter{
     /**
      * Check tools, libraries and firmware update.
      */
-    checkUpdate () {
+    async checkUpdate () {
         console.log('Check update');
     }
 
