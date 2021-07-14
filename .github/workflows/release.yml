@@ -38,6 +38,7 @@ jobs:
         uses: oprypin/find-latest-tag@v1
         id: tagName
         with: 
+          repository: OttawaSTEM/scratch-arduino-link
           releases-only: true
 
       - name: Github Release
