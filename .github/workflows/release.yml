@@ -40,11 +40,6 @@ jobs:
         with:
           tagRegex: "v(.*)"
 
-      - name: Check
-        run: |
-          ls dist
-          echo ${{ steps.tagName.outputs.tag }}
-
       - name: Github Release
         uses: softprops/action-gh-release@v1
         env:
