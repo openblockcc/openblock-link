@@ -35,7 +35,7 @@ jobs:
         run: npx rimraf "dist/!(*.dmg)"
 
       - name: Get tag
-        uses: dawidd6/action-get-tag@v1
+        uses: little-core-labs/get-git-tag@v3.0.1
         id: tagName
 
       - name: Github Release
