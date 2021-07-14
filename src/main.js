@@ -64,7 +64,15 @@ function createWindow() {
         toolsPath = path.join(appPath, "../tools");
     }
     const link = new ScratchArduinoLink(dataPath, toolsPath);
-    link.listen();
+    const checkUpdate = new Promise ((resolve, reject) => {
+        link.checkUpdate();
+        resolve('Check update');
+    });
+    Promise.all([
+        checkUpdate
+    ]).then(() => {
+        link.listen();
+    })
 
     const trayMenuTemplate = [
         {
