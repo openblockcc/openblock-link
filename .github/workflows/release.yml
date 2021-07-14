@@ -42,6 +42,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
         with:
-          files: "dist/Scratch Arduino Link *.*"
-          name: Release V${{ steps.tagName.outputs.tag }}
+          files: |
+            "dist/Scratch Arduino Link *.*"
+            "src/index.json"
+          name: Release v${{ steps.tagName.outputs.tag }}
           tag_name: v${{ steps.tagName.outputs.tag }}
