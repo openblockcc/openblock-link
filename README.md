@@ -4,6 +4,7 @@
 ### Instructions
 ```bash
 npm install
+npm run fetch
 npm start
 ```
 

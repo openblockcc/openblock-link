@@ -1,0 +1,32 @@
+{
+    "tools": [
+        {
+            "os": "win",
+            "description": "Arduino Tools for Windows",
+            "version": "v1.0.0",
+            "fileName": "Scratch-Arduino-Tools-Win-v1.0.0.zip"
+        },
+        {
+            "os": "mac",
+            "description": "Arduino Tools for Mac OS",
+            "version": "v1.0.0",
+            "fileName": "Scratch-Arduino-Tools-MacOS-v1.0.0.zip"
+        }
+    ],
+    "firmwares": [
+        {
+            "firmwareName": "ArduinoStandardFirmata",
+            "description": "Arduino Standard Firmata - v2.5.8",
+            "version": "v2.5.8",
+            "fileName": "arduino-standard-firmata-v2.5.8.zip"
+        }
+    ],
+    "libraries": [
+        {
+            "libraryName": "ottoDIYLib",
+            "description": "Otto Robotic Arduino Library - v9.3.0",
+            "version": "v9.3.0",
+            "fileName": "OttoDIYlib-v9.3.0.zip"
+        }
+    ]
+}

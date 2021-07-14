@@ -15,7 +15,7 @@ win:
 nsis:
   oneClick: false # allow user to choose per-user or per-machine
   allowToChangeInstallationDirectory: true
-  artifactName: "scratch-arduino-link-win-${version}.${ext}"
+  artifactName: "Scratch-Arduino-Link-Win-${version}.${ext}"
   deleteAppDataOnUninstall: true
 
 mac:  # Manual delte app data after uninstall
@@ -30,9 +30,9 @@ mac:  # Manual delte app data after uninstall
   hardenedRuntime: true
   icon: buildResources/ScratchDesktop.icns
   provisioningProfile: embedded.provisionprofile
-  artifactName: "Scratch Arduino Link ${version}.${ext}"
+  artifactName: "Scratch-Arduino-Link-MacOS-${version}.${ext}"
   target:
     - dmg
 
 dmg:
-  title: "scratch-arduino-link-macos-${version}"
+  title: "Scratch-Arduino-Link-MacOS-${version}"
