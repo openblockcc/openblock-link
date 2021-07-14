@@ -76,6 +76,13 @@ class ScratchArduinoLink extends Emitter{
                 console.warn(info);
             });
     }
+    
+    /**
+     * Check tools, libraries and firmware update.
+     */
+    checkUpdate () {
+        console.log('Check update');
+    }
 
     /**
      * Start a server listening for connections.
