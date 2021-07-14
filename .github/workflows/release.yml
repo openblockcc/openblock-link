@@ -37,7 +37,8 @@ jobs:
       - name: Get tag
         uses: oprypin/find-latest-tag@v1
         id: tagName
-        with: releases-only
+        with: 
+          releases-only
 
       - name: Github Release
         uses: softprops/action-gh-release@v1
