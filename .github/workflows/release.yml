@@ -42,7 +42,7 @@ jobs:
 
       - name: Check
         run: |
-          ls -al dist
+          ls dist
           echo ${{ steps.tagName.outputs.tag }}
 
       - name: Github Release
@@ -51,7 +51,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
         with:
           files: |
-            "dist/Scratch-Arduino-Link-*.*"
-            "src/index.json"
+            dist/Scratch-Arduino-Link-*.*
+            src/index.json
           name: Release v${{ steps.tagName.outputs.tag }}
           tag_name: v${{ steps.tagName.outputs.tag }}
