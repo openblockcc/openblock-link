@@ -35,8 +35,9 @@ jobs:
         run: npx rimraf "dist/!(*.dmg)"
 
       - name: Get tag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
+        uses: oprypin/find-latest-tag@v1
         id: tagName
+        with: releases-only
 
       - name: Github Release
         uses: softprops/action-gh-release@v1
