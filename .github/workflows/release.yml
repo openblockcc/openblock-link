@@ -35,10 +35,8 @@ jobs:
         run: npx rimraf "dist/!(*.dmg)"
 
       - name: Get tag
-        uses: olegtarasov/get-tag@v2.1
+        uses: WyriHaximus/github-action-get-previous-tag@v1
         id: tagName
-        with:
-          tagRegex: "v(.*)"
 
       - name: Github Release
         uses: softprops/action-gh-release@v1
@@ -48,5 +46,5 @@ jobs:
           files: |
             dist/Scratch-Arduino-Link-*.*
             src/index.json
-          name: Release v${{ steps.tagName.outputs.tag }}
-          tag_name: v${{ steps.tagName.outputs.tag }}
+          name: Release ${{ steps.tagName.outputs.tag }}
+          tag_name: ${{ steps.tagName.outputs.tag }}
