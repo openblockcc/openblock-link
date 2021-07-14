@@ -37,6 +37,13 @@ jobs:
       - name: Get tag
         uses: olegtarasov/get-tag@v2.1
         id: tagName
+        with:
+          tagRegex: "v(.*)"
+
+      - name: Check
+        run: |
+          ls -al dist
+          echo ${{ steps.tagName.outputs.tag }}
 
       - name: Github Release
         uses: softprops/action-gh-release@v1
