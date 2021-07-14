@@ -1,9 +1,9 @@
 directories:
   buildResources: buildResources
   output: dist
-extraResources: ["tools", "firmwares"]
+# extraResources: ["tools", "firmwares", "libraryes"]
 
-appId: 'ottawastem.com.scratch-arduino-link'
+appId: "ottawastem.com.scratch-arduino-link"
 productName: "Scratch Arduino Link"
 publish: # empty provider list = don't publish
 
