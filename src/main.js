@@ -64,7 +64,7 @@ function createWindow() {
         toolsPath = path.join(appPath, "../tools");
     }
     const link = new ScratchArduinoLink(dataPath, toolsPath);
-    link.checkUpdate().then(
+    link.start().then(
         link.listen()
     );
 

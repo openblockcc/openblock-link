@@ -18,13 +18,13 @@
             "firmwareName": "ArduinoStandardFirmata",
             "description": "Arduino Standard Firmata - v2.5.8",
             "version": "v2.5.8",
-            "fileName": "arduino-standard-firmata-v2.5.8.zip",
-            "folderName": "Android"
+            "fileName": "ArduinoStandardFirmata-v2.5.8.zip",
+            "folderName": "android"
         }
     ],
     "libraries": [
         {
-            "libraryName": "ottoDIYLib",
+            "libraryName": "OttoDIYLib",
             "description": "Otto Robotic Arduino Library - v9.3.0",
             "version": "v9.3.0",
             "fileName": "OttoDIYlib-v9.3.0.zip",
