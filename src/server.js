@@ -85,14 +85,30 @@ class ScratchArduinoLink extends Emitter{
     }
     
     /**
-     * Check tools, libraries and firmware update.
+     * Check libraries and firmware update.
      */
     async checkUpdate () {
         console.log('Check update');
-        // scratch-arduino-tools
+        // scratch-arduino-libraries
         const repo = 'scratch-arduino-tools';
         const outputdir = path.resolve('./firmwares');
-
+        
+        if (!fs.existsSync(outputdir)) {
+            fs.mkdirSync(outputdir, {recursive: true});
+        }
+        
+        downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)
+            .then(() => {
+                console.log('Firmwares download complete.');
+            })
+            .catch(err => {
+                console.error(err.message);
+            });
+            
+        // scratch-arduino-libraries
+        const repo = 'scratch-arduino-tools';
+        const outputdir = path.resolve('./firmwares');
+        
         if (!fs.existsSync(outputdir)) {
             fs.mkdirSync(outputdir, {recursive: true});
         }
