@@ -88,6 +88,20 @@ class ScratchArduinoLink extends Emitter{
      */
     async checkUpdate () {
         console.log('Check update');
+
+        // Download check index.json
+        const repo = 'scratch-arduino-libraries';
+        const outputdir = path.resolve('./');
+        const filterAsset = asset => (asset.name.indexOf('index.json') > 0);
+        downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)
+            .then(() => {
+                console.log('index.json download complete.');
+            })
+            .catch(err => {
+                console.error(err.message);
+            });
+        
+
         // scratch-arduino-libraries
         const repo = 'scratch-arduino-libraries';
         const outputdir = path.resolve('./tools/Arduino/libraries');
@@ -123,7 +137,7 @@ class ScratchArduinoLink extends Emitter{
                 return (asset.name.indexOf('MacOS') > 0);
             }
         }
-        
+
         downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)
             .then(() => {
                 console.log('Firmwares download complete.');
