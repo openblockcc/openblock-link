@@ -9,7 +9,6 @@ const path = require('path');
 const user = 'OttawaSTEM';
 const leaveZipped = false;
 const filterRelease = release => release.prerelease === false;
-const filterAsset = () => true;
 
 /**
  * Configuration the default tools path.
@@ -90,13 +89,17 @@ class ScratchArduinoLink extends Emitter{
     async checkUpdate () {
         console.log('Check update');
         // scratch-arduino-libraries
-        const repo = 'scratch-arduino-tools';
-        const outputdir = path.resolve('./firmwares');
+        const repo = 'scratch-arduino-libraries';
+        const outputdir = path.resolve('./tools/Arduino/libraries');
         
-        if (!fs.existsSync(outputdir)) {
-            fs.mkdirSync(outputdir, {recursive: true});
+        const filterAsset = asset => {
+            if (process.platform === 'win32') {
+                return (asset.name.indexOf('Win') > 0);
+            } else if (process.platform === 'darwin') {
+                return (asset.name.indexOf('MacOS') > 0);
+            }
         }
-        
+
         downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)
             .then(() => {
                 console.log('Firmwares download complete.');
@@ -104,13 +107,21 @@ class ScratchArduinoLink extends Emitter{
             .catch(err => {
                 console.error(err.message);
             });
-            
-        // scratch-arduino-libraries
-        const repo = 'scratch-arduino-tools';
+
+        // scratch-arduino-firmwares
+        const repo = 'scratch-arduino-firmware';
         const outputdir = path.resolve('./firmwares');
         
         if (!fs.existsSync(outputdir)) {
             fs.mkdirSync(outputdir, {recursive: true});
+        }
+
+        const filterAsset = asset => {
+            if (process.platform === 'win32') {
+                return (asset.name.indexOf('Win') > 0);
+            } else if (process.platform === 'darwin') {
+                return (asset.name.indexOf('MacOS') > 0);
+            }
         }
         
         downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)

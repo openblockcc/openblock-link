@@ -34,20 +34,11 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: npx rimraf "dist/!(*.dmg)"
 
-      - name: Get tag
-        uses: oprypin/find-latest-tag@v1
-        id: tagName
-        with: 
-          repository: OttawaSTEM/scratch-arduino-link
-          releases-only: true
-
       - name: Github Release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB_SECRET }}
+        uses: ncipollo/release-action@v1
         with:
-          files: |
-            dist/Scratch-Arduino-Link-*.*
-            src/index.json
-          name: Release ${{ steps.tagName.outputs.tag }}
-          tag_name: ${{ steps.tagName.outputs.tag }}
+          artifacts: |
+            "dist/Scratch-Arduino-Link-*.*"
+            "src/index.json"
+          token: ${{ secrets.TOKEN_GITHUB_SECRET }}
+          allowUpdates: true
