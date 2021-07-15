@@ -1,8 +1,15 @@
+const downloadRelease = require('download-github-release');
 const http = require('http');
 const url = require('url');
 const {Server} = require('ws');
 const Emitter = require('events');
+const fs = require('fs');
 const path = require('path');
+
+const user = 'OttawaSTEM';
+const leaveZipped = false;
+const filterRelease = release => release.prerelease === false;
+const filterAsset = () => true;
 
 /**
  * Configuration the default tools path.
@@ -78,10 +85,42 @@ class ScratchArduinoLink extends Emitter{
     }
     
     /**
-     * Check tools, libraries and firmware update.
+     * Check libraries and firmware update.
      */
     async checkUpdate () {
         console.log('Check update');
+        // scratch-arduino-libraries
+        const repo = 'scratch-arduino-tools';
+        const outputdir = path.resolve('./firmwares');
+        
+        if (!fs.existsSync(outputdir)) {
+            fs.mkdirSync(outputdir, {recursive: true});
+        }
+        
+        downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)
+            .then(() => {
+                console.log('Firmwares download complete.');
+            })
+            .catch(err => {
+                console.error(err.message);
+            });
+            
+        // scratch-arduino-libraries
+        const repo = 'scratch-arduino-tools';
+        const outputdir = path.resolve('./firmwares');
+        
+        if (!fs.existsSync(outputdir)) {
+            fs.mkdirSync(outputdir, {recursive: true});
+        }
+        
+        downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)
+            .then(() => {
+                console.log('Firmwares download complete.');
+            })
+            .catch(err => {
+                console.error(err.message);
+            });
+        
     }
 
     /**
