@@ -1,6 +1,6 @@
 const Session = require('./session');
 
-class StatusSession extends Session {
+class LinkStatusSession extends Session {
     constructor (socket) {
         super(socket);
     }
@@ -19,4 +19,4 @@ class StatusSession extends Session {
     }
 }
 
-module.exports = StatusSession;
+module.exports = LinkStatusSession;

@@ -1,4 +1,6 @@
+const { dialog } = require('electron')
 const downloadRelease = require('download-github-release');
+const loadJsonFile = require('load-json-file');
 const http = require('http');
 const url = require('url');
 const {Server} = require('ws');
@@ -84,68 +86,108 @@ class ScratchArduinoLink extends Emitter{
     }
     
     /**
-     * Check libraries and firmware update.
+     * Initial and Check tools, libraries and firmware update.
      */
-    async checkUpdate () {
-        console.log('Check update');
-
-        // Download check index.json
-        const repo = 'scratch-arduino-libraries';
-        const outputdir = path.resolve('./');
-        const filterAsset = asset => (asset.name.indexOf('index.json') > 0);
-        downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)
-            .then(() => {
-                console.log('index.json download complete.');
-            })
-            .catch(err => {
-                console.error(err.message);
-            });
-        
-
-        // scratch-arduino-libraries
-        const repo = 'scratch-arduino-libraries';
-        const outputdir = path.resolve('./tools/Arduino/libraries');
-        
-        const filterAsset = asset => {
-            if (process.platform === 'win32') {
-                return (asset.name.indexOf('Win') > 0);
-            } else if (process.platform === 'darwin') {
-                return (asset.name.indexOf('MacOS') > 0);
+    async start () {
+        try {
+            // Initial install arduino tools
+            if (!fs.existsSync(this.toolsPath)) {
+                const toolsRepo = 'scratch-arduino-tools';
+                const toolsPath = path.resolve(this.toolsPath, '../');
+                console.log(toolsPath);
+                const filterAsset = asset => {
+                    if (process.platform === 'win32') {
+                        return (asset.name.indexOf('Win') >= 0);
+                    } else if (process.platform === 'darwin') {
+                        return (asset.name.indexOf('MacOS') >= 0);
+                    }
+                }
+                await downloadRelease(user, toolsRepo, toolsPath, filterRelease, filterAsset, leaveZipped)
+                    .then(() => {
+                        console.log('tools download complete.');
+                    })
+                    .catch(err => {
+                        console.error(err.message);
+                    });
             }
-        }
+            
+            // Download index.json
+            const repo = 'scratch-arduino-link';
+            const indexPath = path.resolve(this.userDataPath);
+            const filterAsset = asset => (asset.name.indexOf('index.json') >= 0);
+            await downloadRelease(user, repo, indexPath, filterRelease, filterAsset, leaveZipped)
+                .then(() => {
+                    console.log('index.json download complete.');
+                })
+                .catch(err => {
+                    console.error(err.message);
+                });
+            const linkPackages = await loadJsonFile(path.join(indexPath, 'index.json'));
 
-        downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)
-            .then(() => {
-                console.log('Firmwares download complete.');
-            })
-            .catch(err => {
-                console.error(err.message);
-            });
-
-        // scratch-arduino-firmwares
-        const repo = 'scratch-arduino-firmware';
-        const outputdir = path.resolve('./firmwares');
-        
-        if (!fs.existsSync(outputdir)) {
-            fs.mkdirSync(outputdir, {recursive: true});
-        }
-
-        const filterAsset = asset => {
-            if (process.platform === 'win32') {
-                return (asset.name.indexOf('Win') > 0);
-            } else if (process.platform === 'darwin') {
-                return (asset.name.indexOf('MacOS') > 0);
+            // scratch-arduino-libraries
+            const libraryPath = path.join(path.resolve(this.toolsPath), '/Arduino/libraries');
+            for (const library of linkPackages['libraries']) {
+                const librariesRepo = 'scratch-arduino-libraries';
+                if (!fs.existsSync(path.join(libraryPath, library['folderName']))) {
+                    const libraryFilterAsset = asset => (asset.name.indexOf(library['libraryName']) >= 0);
+                    await downloadRelease(user, librariesRepo, libraryPath, filterRelease, libraryFilterAsset, leaveZipped)
+                        .then(() => {
+                            console.log(library['fileName'], ' download complete.');
+                        })
+                        .catch(err => {
+                            console.error(err.message);
+                        });
+                }
             }
-        }
+            
+            // scratch-arduino-firmwares
+            const firmwaresRepo = 'scratch-arduino-firmwares';
+            const firmwarePath = path.join(path.resolve(this.toolsPath), '../firmwares');
+            const oldFirmwareVersionPath = path.join(firmwarePath, 'firmware-version.json');
+            if (!fs.existsSync(firmwarePath)) {
+                fs.mkdirSync(firmwarePath, {recursive: true});
+            }
+            if (!fs.existsSync(oldFirmwareVersionPath)) {
+                for (const firmware of linkPackages['firmwares']) {
+                    const libraryFilterAsset = asset => (asset.name.indexOf(firmware['firmwareName']) >= 0);
+                    await downloadRelease(user, firmwaresRepo, firmwarePath, filterRelease, libraryFilterAsset, leaveZipped)
+                        .then(() => {
+                            console.log(firmware['fileName'], ' download complete.');
+                        })
+                        .catch(err => {
+                            console.error(err.message);
+                        });
+                }
+            } else {
+                const oldFirmwareVersion = await loadJsonFile(oldFirmwareVersionPath);
+                for (const firmware of linkPackages['firmwares']) {
+                    if (firmware['version'] > oldFirmwareVersion[firmware['firmwareName']]) {
+                        const libraryFilterAsset = asset => (asset.name.indexOf(firmware['firmwareName']) >= 0);
+                        await downloadRelease(user, firmwaresRepo, firmwarePath, filterRelease, libraryFilterAsset, leaveZipped)
+                            .then(() => {
+                                console.log(firmware['fileName'], ' download complete.');
+                            })
+                            .catch(err => {
+                                console.error(err.message);
+                            });
+                    }
+                }
+            }
 
-        downloadRelease(user, repo, outputdir, filterRelease, filterAsset, leaveZipped)
-            .then(() => {
-                console.log('Firmwares download complete.');
-            })
-            .catch(err => {
-                console.error(err.message);
+            let data = {};
+            for (const firmware of linkPackages['firmwares']) {
+                data[firmware['firmwareName']] = firmware['version'];
+            }
+            fs.writeFileSync(oldFirmwareVersionPath, JSON.stringify(data));            
+
+        } catch(err) {
+            dialog.showMessageBox({
+                title: 'Scratch Arduino Link',
+                type: 'error',
+                buttons: ['Close'],
+                message: 'Update error - ' + err.message
             });
-        
+        }
     }
 
     /**
