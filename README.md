@@ -1,6 +1,8 @@
 # Scratch Arduino Link
 [![](https://github.com/OttawaSTEM/scratch-arduino-link/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/OttawaSTEM/scratch-arduino-link/actions/workflows/release.yml)
+![Github Releases](https://img.shields.io/github/downloads/ottawastem/scratch-arduino-link/total?color=orange)
 ![](https://img.shields.io/github/license/OttawaSTEM/scratch-arduino-link)
+
 
 Scratch Arduino Link is a helper application that lets you connect Scratch to Arduino Robots and Arduino Boards.
 
