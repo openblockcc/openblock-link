@@ -4,10 +4,10 @@
   "description": "Porvide local hardware function to scratch-arduino",
   "main": "src/main.js",
   "scripts": {
-    "fetch": "rimraf tools libraries firmwares && node script/download-tools.js && node script/download-libraries.js && node script/download-firmwares.js",
+    "clean": "rimraf dist tools libraries firmwares",
+    "fetch": "npm run clean && node script/download-tools.js && node script/download-libraries.js && node script/download-firmwares.js",
+    "build": "npm run fetch && electron-builder",
     "start": "electron .",
-    "build": "rimraf dist && electron-builder",
-    "clean": "rimraf dist",
     "docs": "jsdoc -c .jsdoc.json",
     "test": "node script/test.js",
     "lint": "eslint ./src"
