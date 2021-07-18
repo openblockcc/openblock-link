@@ -1,7 +1,7 @@
 directories:
   buildResources: buildResources
   output: dist
-# extraResources: ["tools", "firmwares", "libraryes"]
+extraResources: ["tools", "firmwares", "libraryes"]
 
 appId: "ottawastem.com.scratch-arduino-link"
 productName: "Scratch Arduino Link"

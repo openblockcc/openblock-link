@@ -173,13 +173,11 @@ class ScratchArduinoLink extends Emitter{
                     }
                 }
             }
-
-            let data = {};
+            let data = {};      // Save current firmware version
             for (const firmware of linkPackages['firmwares']) {
                 data[firmware['firmwareName']] = firmware['version'];
             }
             fs.writeFileSync(oldFirmwareVersionPath, JSON.stringify(data));            
-
         } catch(err) {
             dialog.showMessageBox({
                 title: 'Scratch Arduino Link',
