@@ -15,7 +15,7 @@ win:
 nsis:
   perMachine: false   # Only allow install per user installation
   oneClick: true
-  allowToChangeInstallationDirectory: true
+  allowToChangeInstallationDirectory: false
   artifactName: "Scratch-Arduino-Link-Win-${version}.${ext}"
   deleteAppDataOnUninstall: true
   createDesktopShortcut: true
