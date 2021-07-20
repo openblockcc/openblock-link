@@ -13,7 +13,7 @@ win:
     - nsis
 
 nsis:
-  perMachine: true
+  perMachine: false
   oneClick: false
   allowToChangeInstallationDirectory: true
   artifactName: "Scratch-Arduino-Link-Win-${version}.${ext}"
