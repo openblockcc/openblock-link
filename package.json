@@ -1,6 +1,6 @@
 {
   "name": "scratch-arduino-link",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Porvide local hardware function to scratch-arduino",
   "main": "src/main.js",
   "scripts": {
