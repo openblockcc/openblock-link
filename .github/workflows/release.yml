@@ -42,7 +42,7 @@ jobs:
       - name: Github Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "dist/Scratch-Arduino-Link-*.*, src/index.json"
+          artifacts: "dist/Scratch-Arduino-Link-*.*, index.json"
           tag: ${{ steps.tagName.outputs.tag }}
           token: ${{ secrets.TOKEN_GITHUB_SECRET }}
           allowUpdates: true
