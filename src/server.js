@@ -90,7 +90,6 @@ class ScratchArduinoLink extends Emitter{
      */
     async start () {
         try {
-            alert(this.toolsPath);
             // Initial install arduino tools
             if (!fs.existsSync(this.toolsPath)) {
                 const toolsRepo = 'scratch-arduino-tools';
