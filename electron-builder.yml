@@ -3,6 +3,7 @@ directories:
   output: dist
 extraResources: ["tools", "firmwares", "libraryes"]
 
+app: "Scratch Arduino Link"
 appId: "ottawastem.com.scratch-arduino-link"
 productName: "Scratch Arduino Link"
 publish: # empty provider list = don't publish
