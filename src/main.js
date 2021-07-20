@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, nativeImage } = require('electron');
+const { app, BrowserWindow, nativeImage, shell } = require('electron');
 const path = require('path');
 const electron = require('electron');
 
@@ -71,7 +71,9 @@ function createWindow() {
     const trayMenuTemplate = [
         {
             label: 'Help',
-            click: function () {}
+            click: function () {
+                shell.openExternal('https://github.com/OttawaSTEM/scratch-arduino-gui/tree/main')
+            }
         },
         {
             label: 'Exit',
