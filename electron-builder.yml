@@ -3,7 +3,7 @@ directories:
   output: dist
 extraResources: ["tools", "firmwares", "libraryes"]
 
-appId: "ottawastem.com.scratch-arduino-link"
+appId: "com.ottawastem.scratch-arduino-link"
 productName: "Scratch Arduino Link"
 publish: # empty provider list = don't publish
 
@@ -18,7 +18,6 @@ nsis:
   artifactName: "Scratch-Arduino-Link-Win-${version}.${ext}"
   deleteAppDataOnUninstall: true
   createDesktopShortcut: true
-  createStartMenuShortcut: true
 
 mac:  # Manual delte app data after uninstall
   category: public.app-category.education

@@ -103,17 +103,17 @@ function createWindow() {
 
 const gotTheLock = app.requestSingleInstanceLock()
 if (!gotTheLock) {
-  app.quit()
+    app.quit()
 } else {
-  app.on('second-instance', (event, commandLine, workingDirectory) => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore()
-      mainWindow.focus()
-      mainWindow.show()
-    }
-  })
-  
-  app.on('ready', createWindow);
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) 
+                mainWindow.restore()
+            mainWindow.focus()
+            mainWindow.show()
+        }
+    })
+    app.on('ready', createWindow);
 }
 
 app.on('window-all-closed', function () {

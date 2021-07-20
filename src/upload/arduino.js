@@ -39,8 +39,7 @@ class Arduino {
             this._sendstd(`${ansi.yellow_dark}arduino cli config has not been initialized yet.\n`);
             this._sendstd(`${ansi.green_dark}set the path to ${this._arduinoPath}.\n`);
             spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.data', this._arduinoPath]);
-            spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.downloads',
-                path.join(this._arduinoPath, 'staging')]);
+            spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.downloads', path.join(this._arduinoPath, 'staging')]);
             spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.user', this._arduinoPath]);
         }
     }
