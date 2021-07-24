@@ -37,7 +37,7 @@
     "download-github-release": "^0.3.2",
     "install": "^0.13.0",
     "js-yaml": "^4.0.0",
-    "serialport": "^9.0.1",
+    "serialport": "^9.2.0",
     "ws": "^7.1.1",
     "wss": "^3.3.4"
   },
