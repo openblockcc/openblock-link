@@ -131,7 +131,8 @@ class SerialportSession extends Session {
                 baudRate: peripheralConfig.config.baudRate,
                 dataBits: peripheralConfig.config.dataBits,
                 stopBits: peripheralConfig.config.stopBits,
-                autoOpen: false
+                autoOpen: false,
+                rtscts: true
             });
             try {
                 port.open(error => {
