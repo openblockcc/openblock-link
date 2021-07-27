@@ -262,7 +262,9 @@ class SerialportSession extends Session {
                 const exitCode = await tool.build(code, library);
                 if (exitCode === 'Success') {
                     try {
+                        this.sendstd(`${ansi.clear}Disconnect serial port\n`);
                         await this.disconnect();
+                        this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
                         await tool.flash();
                         await this.connect(this.peripheralParams, true);
                         this.sendRemoteRequest('uploadSuccess', null);
@@ -314,7 +316,9 @@ class SerialportSession extends Session {
             tool = new Arduino(this.peripheral.path, params, this.userDataPath,
                 this.toolsPath, this.sendstd.bind(this));
             try {
+                this.sendstd(`${ansi.clear}Disconnect serial port\n`);
                 await this.disconnect();
+                this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
                 await tool.flashRealtimeFirmware();
                 await this.connect(this.peripheralParams, true);
                 this.sendRemoteRequest('uploadSuccess', null);
