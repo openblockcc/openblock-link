@@ -132,7 +132,7 @@ class SerialportSession extends Session {
                 dataBits: peripheralConfig.config.dataBits,
                 stopBits: peripheralConfig.config.stopBits,
                 autoOpen: false,
-                rtscts: true
+                rtscts: peripheralConfig.config.rtscts ? peripheralConfig.config.rtscts : false
             });
             try {
                 port.open(error => {
