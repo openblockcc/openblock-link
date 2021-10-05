@@ -282,10 +282,9 @@ class SerialportSession extends Session {
                 });
             }
             break;
-        case 'microbitV2':
         case 'microbit':
             tool = new Microbit(this.peripheral.path, config, this.userDataPath,
-                this.toolsPath, this.sendstd.bind(this), config.type);
+                this.toolsPath, this.sendstd.bind(this));
             try {
                 await this.disconnect();
                 await tool.flash(code, library);

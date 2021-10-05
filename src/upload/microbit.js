@@ -7,14 +7,13 @@ const os = require('os');
 const FLASH_TIME = 25 * 1000; // 20s
 
 class Microbit {
-    constructor (peripheralPath, config, userDataPath, toolsPath, sendstd, deviceType) {
+    constructor (peripheralPath, config, userDataPath, toolsPath, sendstd) {
         this._peripheralPath = peripheralPath;
         this._config = config;
         this._userDataPath = userDataPath;
         this._projectPath = path.join(userDataPath, 'microbit/project');
         this._pythonPath = path.join(toolsPath, 'Python');
         this._sendstd = sendstd;
-        this._deviceType = deviceType;
 
         if (os.platform() === 'darwin') {
             this._pyPath = path.join(this._pythonPath, 'bin/python');
@@ -60,13 +59,8 @@ class Microbit {
         const ufsTestExitCode = await this.ufsTestFirmware();
         if (ufsTestExitCode === 'Failed') {
             this._sendstd(`${ansi.yellow_dark}Could not enter raw REPL.\n`);
-            if (this._deviceType === 'microbit') {
-                this._sendstd(`${ansi.clear}Try to flash micropython for microbit firmware to fix\n`);
-                await this.uflash(1);
-            } else if (this._deviceType === 'microbitV2') {
-                this._sendstd(`${ansi.clear}Try to flash micropython for microbit V2 firmware to fix\n`);
-                await this.uflash(2);
-            }
+            this._sendstd(`${ansi.clear}Try to flash micropython for microbit firmware to fix.\n`);
+            await this.uflash();
         }
 
         this._sendstd('Writing files...\n');
@@ -117,21 +111,12 @@ class Microbit {
         });
     }
 
-    uflash (version) {
+    uflash () {
         return new Promise((resolve, reject) => {
-            let uflash;
-
-            if (version === 1) {
-                uflash = spawn(this._pyPath, [this._uflashPath]);
-            } else if (version === 2) {
-                const v2FirmwarePath = path.join(this._pythonPath, '../../firmwares/microbit',
-                    'micropython-microbit-v2.0.0-beta.5.hex');
-
-                uflash = spawn(this._pyPath, [this._uflashPath, '-r', v2FirmwarePath]);
-            }
+            const uflash = spawn(this._pyPath, [this._uflashPath]);
 
             this._sendstd(`${ansi.green_dark}Start flash firmware...\n`);
-            this._sendstd(`${ansi.clear}This step will take tens of seconds, pelese wait\n`);
+            this._sendstd(`${ansi.clear}This step will take tens of seconds, pelese wait.\n`);
 
             // Add finish flasg to solve uflash will exit immediately after start, nut not exit
             // after flash finish. So add a counter flag in order to ensure that enough time has
