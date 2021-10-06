@@ -101,7 +101,6 @@ class SerialportSession extends Session {
                         name: `${name} (${device.path})`
                     });
                 } else if (filters.pnpid.includes(pnpid)) {
-
                     this.reportedPeripherals[device.path] = device;
                     this.sendRemoteRequest('didDiscoverPeripheral', {
                         peripheralId: device.path,
