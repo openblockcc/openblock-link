@@ -125,7 +125,7 @@ class OpenBlockLink extends Emitter{
 
         this._httpServer.listen(this._port, '0.0.0.0', () => {
             this.emit('ready');
-            log.info('socket server listend: ', `http://${this._host}:${this._port}`);
+            log.info(`\x1B[32mOpenblock link server start successfully\nSocket server listend: http://${this._host}:${this._port}\x1B[0m`);
         });
 
         this._httpServer.on('error', e => {

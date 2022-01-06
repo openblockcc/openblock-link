@@ -5,8 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "fetch": "rimraf tools firmwares && node script/download-tools.js && node script/download-firmwares.js",
-    "start": "rimraf ../.openblockData/link && node test/start-server.js",
-    "start:info": "rimraf ../.openblockData/link && node test/start-server.js --log-level=info",
+    "start": "rimraf ../.openblockData/link && node test/start-server.js --log-level=info",
     "start:debug": "rimraf ../.openblockData/link && node test/start-server.js --log-level=debug",
     "clean": "rimraf ../.openblockData/link tools firmwares",
     "docs": "jsdoc -c .jsdoc.json",
