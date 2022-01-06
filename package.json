@@ -5,11 +5,14 @@
   "main": "src/index.js",
   "scripts": {
     "fetch": "rimraf tools firmwares && node script/download-tools.js && node script/download-firmwares.js",
-    "start": "rimraf ../.openblockData/link && node src/server.js",
+    "start": "rimraf ../.openblockData/link && node test/start-server.js",
+    "start:info": "rimraf ../.openblockData/link && node test/start-server.js --log-level=info",
+    "start:debug": "rimraf ../.openblockData/link && node test/start-server.js --log-level=debug",
     "clean": "rimraf ../.openblockData/link tools firmwares",
     "docs": "jsdoc -c .jsdoc.json",
     "lint": "eslint ./src",
-    "test": ""
+    "test": "",
+    "test:multi-server": "node test/start-multi-server.js --log-level=info"
   },
   "repository": {
     "type": "git",
@@ -37,6 +40,7 @@
     "download-github-release": "^0.3.2",
     "install": "^0.13.0",
     "js-yaml": "^4.0.0",
+    "loglevel": "^1.8.0",
     "serialport": "^9.2.0",
     "ws": "^7.1.1",
     "wss": "^3.3.4"

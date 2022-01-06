@@ -3,6 +3,7 @@ const url = require('url');
 const {Server} = require('ws');
 const Emitter = require('events');
 const path = require('path');
+const log = require('loglevel');
 
 /**
  * Configuration the default user data path. Just for debug.
@@ -15,6 +16,12 @@ const DEFAULT_USER_DATA_PATH = path.join(__dirname, '../../.openblockData');
  * @readonly
  */
 const DEFAULT_TOOLS_PATH = path.join(__dirname, '../tools');
+
+/**
+ * Configuration the default host.
+ * @readonly
+ */
+const DEFAULT_HOST = '0.0.0.0';
 
 /**
  * Configuration the default port.
@@ -55,7 +62,8 @@ class OpenBlockLink extends Emitter{
             this.toolsPath = DEFAULT_TOOLS_PATH;
         }
 
-        this._socketPort = DEFAULT_PORT;
+        this._port = DEFAULT_PORT;
+        this._host = DEFAULT_HOST;
         this._httpServer = new http.Server();
         this._socketServer = new Server({server: this._httpServer});
 
@@ -65,7 +73,7 @@ class OpenBlockLink extends Emitter{
             let session;
             if (Session) {
                 session = new Session(socket, this.userDataPath, this.toolsPath);
-                console.log('new connection');
+                log.info('new connection');
                 this.emit('new-connection');
             } else {
                 return socket.close();
@@ -80,23 +88,57 @@ class OpenBlockLink extends Emitter{
             socket.on('error', dispose);
         })
             .on('error', e => {
-                const info = `Error while trying to listen port ${this._socketPort}: ${e}`;
-                console.warn(info);
+                if (e.code !== 'EADDRINUSE') {
+                    log.error(e);
+                }
             });
+
+        const {logLevel} = this.parseArgs();
+        log.setLevel(logLevel);
+    }
+
+    parseArgs () {
+        const scriptArgs = process.argv.slice(2);
+        let logLevel = 'error';
+
+        for (const arg of scriptArgs) {
+            const argSplit = arg.split(/--log-level(\s+|=)/);
+            if (argSplit[1] === '=') {
+                logLevel = argSplit[2];
+            }
+        }
+        return {logLevel};
     }
 
     /**
      * Start a server listening for connections.
      * @param {number} port - the port to listen.
+     * @param {string} host - the host to listen.
      */
-    listen (port) {
+    listen (port, host) {
         if (port) {
-            this._socketPort = port;
+            this._port = port;
+        }
+        if (host) {
+            this._host = host;
         }
 
-        this._httpServer.listen(this._socketPort, '127.0.0.1', () => {
+        this._httpServer.listen(this._port, '0.0.0.0', () => {
             this.emit('ready');
-            console.log('socket server listend: ', `http://127.0.0.1:${this._socketPort}`);
+            log.info('socket server listend: ', `http://${this._host}:${this._port}`);
+        });
+
+        this._httpServer.on('error', e => {
+            if (e.code === 'EADDRINUSE') {
+                this.emit('address-in-use');
+                log.debug('Address in use, retrying...');
+                setTimeout(() => {
+                    this._httpServer.close();
+                    this._httpServer.listen(this._port, this._host);
+                }, 1000);
+            } else {
+                log.error(e);
+            }
         });
     }
 }
