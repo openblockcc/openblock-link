@@ -4,10 +4,12 @@ const ansi = require('ansi-string');
 const Session = require('./session');
 const Arduino = require('../upload/arduino');
 const Microbit = require('../upload/microbit');
+const Maixduino = require('../upload/maixduino');
+const RaspberryPico = require('../upload/raspberrypico');
 const usbId = require('../lib/usb-id');
 
 class SerialportSession extends Session {
-    constructor (socket, userDataPath, toolsPath) {
+    constructor(socket, userDataPath, toolsPath) {
         super(socket);
 
         this.userDataPath = userDataPath;
@@ -24,7 +26,7 @@ class SerialportSession extends Session {
         this.isIndisconnect = false;
     }
 
-    async didReceiveCall (method, params, completion) {
+    async didReceiveCall(method, params, completion) {
         switch (method) {
         case 'discover':
             this.discover(params);
@@ -68,11 +70,13 @@ class SerialportSession extends Session {
         }
     }
 
-    discover (params) {
+    discover(params) {
         if (this.services) {
             throw new Error('cannot discover when connected');
         }
-        const {filters} = params;
+        const {
+            filters
+        } = params;
         if (!Array.isArray(filters.pnpid) || filters.pnpid.length < 1) {
             throw new Error('discovery request must include filters');
         }
@@ -85,7 +89,7 @@ class SerialportSession extends Session {
         }, 100);
     }
 
-    onAdvertisementReceived (peripheral, filters) {
+    onAdvertisementReceived(peripheral, filters) {
         if (peripheral) {
             peripheral.forEach(device => {
                 const vendorId = String(device.vendorId).toUpperCase();
@@ -93,7 +97,6 @@ class SerialportSession extends Session {
                 const pnpid = `USB\\VID_${vendorId}&PID_${productId}`;
 
                 const name = usbId[pnpid] ? usbId[pnpid] : 'Unknown device';
-
                 if (filters.pnpid.includes('*')) {
                     this.reportedPeripherals[device.path] = device;
                     this.sendRemoteRequest('didDiscoverPeripheral', {
@@ -101,6 +104,7 @@ class SerialportSession extends Session {
                         name: `${name} (${device.path})`
                     });
                 } else if (filters.pnpid.includes(pnpid)) {
+
                     this.reportedPeripherals[device.path] = device;
                     this.sendRemoteRequest('didDiscoverPeripheral', {
                         peripheralId: device.path,
@@ -111,13 +115,17 @@ class SerialportSession extends Session {
         }
     }
 
-    connect (params, afterUpload = null) {
+    connect(params, afterUpload = null) {
         return new Promise((resolve, reject) => {
             if (this.peripheral && this.peripheral.isOpen === true) {
                 return reject(new Error('already connected to peripheral'));
             }
-            const {peripheralId} = params;
-            const {peripheralConfig} = params;
+            const {
+                peripheralId
+            } = params;
+            const {
+                peripheralConfig
+            } = params;
             const peripheral = this.reportedPeripherals[peripheralId];
             if (!peripheral) {
                 return reject(new Error(`invalid peripheral ID: ${peripheralId}`));
@@ -126,13 +134,15 @@ class SerialportSession extends Session {
                 clearInterval(this.peripheralsScanorTimer);
                 this.peripheralsScanorTimer = null;
             }
+
             const port = new SerialPort(peripheral.path, {
                 baudRate: peripheralConfig.config.baudRate,
                 dataBits: peripheralConfig.config.dataBits,
                 stopBits: peripheralConfig.config.stopBits,
                 autoOpen: false,
-                rtscts: peripheralConfig.config.rtscts ? peripheralConfig.config.rtscts : false
+                hupcl: peripheralConfig.config.hupcl
             });
+
             try {
                 port.open(error => {
                     if (error) {
@@ -168,7 +178,7 @@ class SerialportSession extends Session {
         });
     }
 
-    onMessageCallback (rev) {
+    onMessageCallback(rev) {
         const params = {
             encoding: 'base64',
             message: rev.toString('base64')
@@ -178,7 +188,7 @@ class SerialportSession extends Session {
         }
     }
 
-    updateBaudrate (params) {
+    updateBaudrate(params) {
         return new Promise((resolve, reject) => {
             if (!this.isIndisconnect) {
                 this.peripheralParams.peripheralConfig.config.baudRate = params.baudRate;
@@ -192,9 +202,12 @@ class SerialportSession extends Session {
         });
     }
 
-    write (params) {
+    write(params) {
         return new Promise((resolve, reject) => {
-            const {message, encoding} = params;
+            const {
+                message,
+                encoding
+            } = params;
             const buffer = new Buffer.from(message, encoding);
 
             try {
@@ -213,11 +226,11 @@ class SerialportSession extends Session {
         });
     }
 
-    read () {
+    read() {
         this.isRead = true;
     }
 
-    disconnect () {
+    disconnect() {
         this.isIndisconnect = true;
         return new Promise((resolve, reject) => {
             if (this.peripheral && this.peripheral.isOpen === true) {
@@ -247,24 +260,31 @@ class SerialportSession extends Session {
         });
     }
 
-    async upload (params) {
-        const {message, config, encoding, library} = params;
+    async upload(params) {
+        const {
+            message,
+            config,
+            encoding,
+            library
+        } = params;
         const code = new Buffer.from(message, encoding).toString();
         let tool;
-
         switch (config.type) {
         case 'arduino':
             tool = new Arduino(this.peripheral.path, config, this.userDataPath,
-                this.toolsPath, this.sendstd.bind(this));
+                    this.toolsPath, this.sendstd.bind(this));
 
-            try {
+            this.sendstd(`${ansi.clear}Disconnect serial port\n`);
+                await this.disconnect();
+                this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
+			try {
                 const exitCode = await tool.build(code, library);
                 if (exitCode === 'Success') {
                     try {
-                        this.sendstd(`${ansi.clear}Disconnect serial port\n`);
+                        /* this.sendstd(`${ansi.clear}Disconnect serial port\n`);
                         await this.disconnect();
                         this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
-                        await tool.flash();
+                        await tool.flash();*/
                         await this.connect(this.peripheralParams, true);
                         this.sendRemoteRequest('uploadSuccess', null);
                     } catch (err) {
@@ -279,22 +299,91 @@ class SerialportSession extends Session {
                 this.sendRemoteRequest('uploadError', {
                     message: ansi.red + err.message
                 });
+				this.sendRemoteRequest('peripheralUnplug', null);
             }
             break;
+        case 'microbitV2':
         case 'microbit':
             tool = new Microbit(this.peripheral.path, config, this.userDataPath,
-                this.toolsPath, this.sendstd.bind(this));
+                    this.toolsPath, this.sendstd.bind(this), config.type);
             try {
-                await this.disconnect();
-                await tool.flash(code, library);
+                this.sendstd(`${ansi.clear}Disconnect serial port\n`);
+				await this.disconnect();
+				this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
+				await tool.flash(code, library);
 
                 const _baudRate = this.peripheralParams.peripheralConfig.config.baudRate;
                 await this.connect(this.peripheralParams, true);
-                await this.updateBaudrate({baudRate: 115200});
+                await this.updateBaudrate({
+                    baudRate: 115200
+                });
                 this.sendstd(`${ansi.clear}Reset device\n`);
-                await this.write({message: '04', encoding: 'hex'});
-                await this.updateBaudrate({baudRate: _baudRate});
+                await this.write({
+                    message: '04',
+                    encoding: 'hex'
+                });
+                await this.updateBaudrate({
+                    baudRate: _baudRate
+                });
 
+                this.sendRemoteRequest('uploadSuccess', null);
+            } catch (err) {
+                this.sendRemoteRequest('uploadError', {
+                    message: ansi.red + err.message
+                });
+                this.sendRemoteRequest('peripheralUnplug', null);
+            }
+            break;
+		case 'raspberrypico':
+            tool = new RaspberryPico(this.peripheral.path, config, this.userDataPath,
+                    this.toolsPath, this.sendstd.bind(this), config.type);
+            try {
+                this.sendstd(`${ansi.clear}Disconnect serial port\n`);
+				await this.disconnect();
+				this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
+				await tool.flash(code, library);
+
+                const _baudRate = this.peripheralParams.peripheralConfig.config.baudRate;
+                await this.connect(this.peripheralParams, true);
+                await this.updateBaudrate({
+                    baudRate: 115200
+                });
+                this.sendstd(`${ansi.clear}Reset device\n`);
+                await this.write({
+                    message: '04',
+                    encoding: 'hex'
+                });
+                await this.updateBaudrate({
+                    baudRate: _baudRate
+                });
+
+                this.sendRemoteRequest('uploadSuccess', null);
+            } catch (err) {
+                this.sendRemoteRequest('uploadError', {
+                    message: ansi.red + err.message
+                });
+                this.sendRemoteRequest('peripheralUnplug', null);
+            }
+            break;
+		case 'maixduino':
+            tool = new Maixduino(this.peripheral.path, config, this.userDataPath,
+                    this.toolsPath, this.sendstd.bind(this), config.type);
+            try {				
+                this.sendstd(`${ansi.clear}Disconnect serial port\n`);
+				await this.disconnect();
+				this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
+				await tool.flash(code, library);
+
+                const _baudRate = this.peripheralParams.peripheralConfig.config.baudRate;
+                await this.connect(this.peripheralParams, true);
+                await this.updateBaudrate({
+                    baudRate: 115200
+                });
+				this.sendstd(`${ansi.clear}Reset device\n`);
+                await this.write({
+                    message: '04',
+                    encoding: 'hex'
+                });
                 this.sendRemoteRequest('uploadSuccess', null);
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
@@ -306,13 +395,13 @@ class SerialportSession extends Session {
         }
     }
 
-    async uploadFirmware (params) {
+    async uploadFirmware(params) {
         let tool;
 
         switch (params.type) {
         case 'arduino':
             tool = new Arduino(this.peripheral.path, params, this.userDataPath,
-                this.toolsPath, this.sendstd.bind(this));
+                    this.toolsPath, this.sendstd.bind(this));
             try {
                 this.sendstd(`${ansi.clear}Disconnect serial port\n`);
                 await this.disconnect();
@@ -324,12 +413,30 @@ class SerialportSession extends Session {
                 this.sendRemoteRequest('uploadError', {
                     message: ansi.red + err.message
                 });
+				this.sendRemoteRequest('peripheralUnplug', null);
+            }
+            break;
+		case 'maixduino':
+            tool = new Maixduino(this.peripheral.path, params, this.userDataPath,
+                    this.toolsPath, this.sendstd.bind(this));
+            try {
+                this.sendstd(`${ansi.clear}Disconnect serial port\n`);
+                await this.disconnect();
+                this.sendstd(`${ansi.clear}Disconnected successfully.\n`);
+                await tool.flashRealtimeFirmware();
+                await this.connect(this.peripheralParams, true);
+                this.sendRemoteRequest('uploadSuccess', null);
+            } catch (err) {
+                this.sendRemoteRequest('uploadError', {
+                    message: ansi.red + err.message
+                });
+				this.sendRemoteRequest('peripheralUnplug', null);
             }
             break;
         }
     }
 
-    sendstd (message) {
+    sendstd(message) {
         if (this._socket) {
             this.sendRemoteRequest('uploadStdout', {
                 message: message
@@ -337,7 +444,7 @@ class SerialportSession extends Session {
         }
     }
 
-    dispose () {
+    dispose() {
         this.disconnect();
         super.dispose();
         this.socket = null;

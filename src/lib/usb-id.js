@@ -30,7 +30,12 @@ const usbId = {
     'USB\\VID_0D28&PID_0204': 'Microbit',
     // Makey Makey
     'USB\\VID_1B4F&PID_2B74': 'Makey Makey',
-    'USB\\VID_1B4F&PID_2B75': 'Makey Makey'
+    'USB\\VID_1B4F&PID_2B75': 'Makey Makey',
+	// Maixduino
+    'USB\\VID_0403&PID_6010': 'Maixduino',
+	// RaspberryPico
+	'USB\\VID_2E8A&PID_0005': 'RaspberryPi Pico'
+
 };
 
 module.exports = usbId;
