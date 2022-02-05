@@ -36,13 +36,13 @@
   "dependencies": {
     "@abandonware/noble": "^1.9.2-10",
     "ansi-string": "^0.2.1",
+    "cli-color": "^2.0.1",
     "download-github-release": "^0.3.2",
     "install": "^0.13.0",
     "js-yaml": "^4.0.0",
-    "loglevel": "^1.8.0",
+    "node-fetch": "^2.6.7",
     "serialport": "^9.2.0",
-    "ws": "^7.1.1",
-    "wss": "^3.3.4"
+    "ws": "^7.1.1"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",

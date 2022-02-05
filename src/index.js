@@ -3,7 +3,8 @@ const url = require('url');
 const {Server} = require('ws');
 const Emitter = require('events');
 const path = require('path');
-const log = require('loglevel');
+const fetch = require('node-fetch');
+const clc = require('cli-color');
 
 /**
  * Configuration the default user data path. Just for debug.
@@ -28,6 +29,18 @@ const DEFAULT_HOST = '0.0.0.0';
  * @readonly
  */
 const DEFAULT_PORT = 20111;
+
+/**
+ * Server name, ues in root path.
+ * @readonly
+ */
+const SERVER_NAME = 'openblock-link-server';
+
+/**
+ * The time interval for retrying to open the port after the port is occupied by another openblock-resource server.
+ * @readonly
+ */
+const REOPEN_INTERVAL = 1000 * 1;
 
 /**
  * Configuration the server routers.
@@ -73,7 +86,7 @@ class OpenBlockLink extends Emitter{
             let session;
             if (Session) {
                 session = new Session(socket, this.userDataPath, this.toolsPath);
-                log.info('new connection');
+                console.info('new connection');
                 this.emit('new-connection');
             } else {
                 return socket.close();
@@ -89,25 +102,23 @@ class OpenBlockLink extends Emitter{
         })
             .on('error', e => {
                 if (e.code !== 'EADDRINUSE') {
-                    log.error(e);
+                    console.error(clc.red(`ERR!: ${e}`));
                 }
             });
-
-        const {logLevel} = this.parseArgs();
-        log.setLevel(logLevel);
     }
 
-    parseArgs () {
-        const scriptArgs = process.argv.slice(2);
-        let logLevel = 'error';
-
-        for (const arg of scriptArgs) {
-            const argSplit = arg.split(/--log-level(\s+|=)/);
-            if (argSplit[1] === '=') {
-                logLevel = argSplit[2];
-            }
-        }
-        return {logLevel};
+    isSameServer (host, port) {
+        return new Promise((resolve, reject) => {
+            fetch(`http://${host}:${port}`)
+                .then(res => res.text())
+                .then(text => {
+                    if (text === SERVER_NAME) {
+                        return resolve(true);
+                    }
+                    return resolve(false);
+                })
+                .catch(err => reject(err));
+        });
     }
 
     /**
@@ -123,22 +134,33 @@ class OpenBlockLink extends Emitter{
             this._host = host;
         }
 
-        this._httpServer.listen(this._port, '0.0.0.0', () => {
-            this.emit('ready');
-            log.info(`\x1B[32mOpenblock link server start successfully\nSocket server listend: http://${this._host}:${this._port}\x1B[0m`);
+        this._httpServer.on('request', (request, res) => {
+            if (request.url === '/') {
+                res.writeHead(200, {'Content-Type': 'text/html'});
+                res.end(SERVER_NAME);
+            }
         });
 
         this._httpServer.on('error', e => {
-            if (e.code === 'EADDRINUSE') {
-                this.emit('address-in-use');
-                log.debug('Address in use, retrying...');
-                setTimeout(() => {
-                    this._httpServer.close();
-                    this._httpServer.listen(this._port, this._host);
-                }, 1000);
-            } else {
-                log.error(e);
-            }
+            this.isSameServer('127.0.0.1', this._port).then(isSame => {
+                if (isSame) {
+                    console.log(`Port is already used by other openblock-resource server, will try reopening after ${REOPEN_INTERVAL} ms`); // eslint-disable-line max-len
+                    setTimeout(() => {
+                        this._httpServer.close();
+                        this._httpServer.listen(this._port, this._host);
+                    }, REOPEN_INTERVAL);
+                    this.emit('port-in-use');
+                } else {
+                    const info = `ERR!: error while trying to listen port ${this._port}: ${e}`;
+                    console.error(clc.red(info));
+                    this.emit('error', info);
+                }
+            });
+        });
+
+        this._httpServer.listen(this._port, '0.0.0.0', () => {
+            this.emit('ready');
+            console.info(clc.green(`Openblock link server start successfully, socket listen on: http://${this._host}:${this._port}`));
         });
     }
 }
