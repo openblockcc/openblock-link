@@ -1,10 +1,11 @@
-const http = require('http');
+const https = require('https');
 const url = require('url');
 const {Server} = require('ws');
 const Emitter = require('events');
 const path = require('path');
 const fetch = require('node-fetch');
 const clc = require('cli-color');
+const fs = require('fs');
 
 /**
  * Configuration the default user data path. Just for debug.
@@ -77,7 +78,10 @@ class OpenBlockLink extends Emitter{
 
         this._port = DEFAULT_PORT;
         this._host = DEFAULT_HOST;
-        this._httpServer = new http.Server();
+        this._httpServer = https.createServer({
+            cert: fs.readFileSync(path.resolve(__dirname, '../certificates/cert.pem'), 'utf8'),
+            key: fs.readFileSync(path.resolve(__dirname, '../certificates/key.pem'), 'utf8')
+        });
         this._socketServer = new Server({server: this._httpServer});
 
         this._socketServer.on('connection', (socket, request) => {
@@ -160,7 +164,7 @@ class OpenBlockLink extends Emitter{
 
         this._httpServer.listen(this._port, '0.0.0.0', () => {
             this.emit('ready');
-            console.info(clc.green(`Openblock link server start successfully, socket listen on: http://${this._host}:${this._port}`));
+            console.info(clc.green(`Openblock link server start successfully, socket listen on: https://${this._host}:${this._port}`));
         });
     }
 }

@@ -38,6 +38,7 @@
     "ansi-string": "^0.2.1",
     "cli-color": "^2.0.1",
     "download-github-release": "^0.3.2",
+    "https": "^1.0.0",
     "install": "^0.13.0",
     "js-yaml": "^4.0.0",
     "node-fetch": "^2.6.7",
