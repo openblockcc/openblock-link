@@ -113,7 +113,11 @@ class OpenBlockLink extends Emitter{
 
     isSameServer (host, port) {
         return new Promise((resolve, reject) => {
-            fetch(`http://${host}:${port}`)
+            const agent = new https.Agent({
+                rejectUnauthorized: false
+            });
+
+            fetch(`https://${host}:${port}`, {agent})
                 .then(res => res.text())
                 .then(text => {
                     if (text === SERVER_NAME) {
