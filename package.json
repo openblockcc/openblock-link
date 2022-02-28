@@ -1,6 +1,6 @@
 {
   "name": "openblock-link",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Porvide local hardware function to openblock",
   "main": "src/index.js",
   "scripts": {
