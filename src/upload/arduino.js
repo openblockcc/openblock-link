@@ -22,7 +22,6 @@ class Arduino {
 
         this._codefilePath = path.join(this._projectfilePath, 'project.ino');
         this._buildPath = path.join(this._projectfilePath, 'build');
-        this._hexPath = path.join(this._buildPath, 'arduino.ino.hex');
 
         this.initArduinoCli();
     }
@@ -47,12 +46,8 @@ class Arduino {
 
     build (code, library = []) {
         return new Promise((resolve, reject) => {
-            if (!fs.existsSync(this._buildPath)) {
-                fs.mkdirSync(this._buildPath, {recursive: true});
-            }
-            // creat this folder to arduino-builder report can not find cache
-            if (!fs.existsSync(path.join(this._projectfilePath, 'cache'))) {
-                fs.mkdirSync(path.join(this._projectfilePath, 'cache'), {recursive: true});
+            if (!fs.existsSync(this._projectfilePath)) {
+                fs.mkdirSync(this._projectfilePath, {recursive: true});
             }
 
             try {
@@ -65,13 +60,9 @@ class Arduino {
                 'compile',
                 '--fqbn', this._config.fqbn,
                 '--libraries', path.join(this._arduinoPath, 'libraries'),
-                '--build-path', path.join(this._projectfilePath, 'build'),
-                '--build-cache-path', path.join(this._projectfilePath, 'cache'),
-                '--output-dir', path.join(this._projectfilePath, 'output'),
-                '-e',
                 '--warnings=none',
                 '--verbose',
-                this._codefilePath
+                this._projectfilePath
             ];
 
             // if extensions library to not empty
@@ -132,9 +123,9 @@ class Arduino {
         ];
 
         if (firmwarePath) {
-            args.push('--input-file', firmwarePath);
+            args.push('--input-file', firmwarePath, firmwarePath);
         } else {
-            args.push('--input-dir', path.join(this._projectfilePath, 'output'));
+            args.push(this._projectfilePath);
         }
 
         return new Promise((resolve, reject) => {
