@@ -103,7 +103,7 @@ class Microbit {
                     this._sendstd(`${file} write finish\n`);
                     return resolve('Success');
                 case 1:
-                    return reject(new Error('ufs failed to write'));
+                    return reject('ufs failed to write');
                 }
             });
         });
@@ -143,7 +143,7 @@ class Microbit {
                     finish();
                     break;
                 case 1:
-                    return reject(new Error('uflash failed to flash'));
+                    return reject('uflash failed to flash');
                 }
             });
         });

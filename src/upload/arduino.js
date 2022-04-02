@@ -103,6 +103,8 @@ class Arduino {
                     return reject(new Error('Invalid (argument for) commandline optiond'));
                 case 4:
                     return reject(new Error('Preference passed to --get-pref does not exist'));
+                default:
+                    return reject(new Error('Unknown error'));
                 }
             });
         });

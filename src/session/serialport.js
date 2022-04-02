@@ -1,8 +1,9 @@
-const SerialPort = require('serialport');
+const {SerialPort} = require('serialport');
 const ansi = require('ansi-string');
 
 const Session = require('./session');
 const Arduino = require('../upload/arduino');
+const MicroPython = require('../upload/microPython');
 const Microbit = require('../upload/microbit');
 const usbId = require('../lib/usb-id');
 
@@ -126,12 +127,13 @@ class SerialportSession extends Session {
                 clearInterval(this.peripheralsScanorTimer);
                 this.peripheralsScanorTimer = null;
             }
-            const port = new SerialPort(peripheral.path, {
+            const port = new SerialPort({
+                path: peripheral.path,
                 baudRate: peripheralConfig.config.baudRate,
                 dataBits: peripheralConfig.config.dataBits,
                 stopBits: peripheralConfig.config.stopBits,
-                autoOpen: false,
-                rtscts: peripheralConfig.config.rtscts ? peripheralConfig.config.rtscts : false
+                hupcl: peripheralConfig.config.hupcl,
+                autoOpen: false
             });
             try {
                 port.open(error => {
@@ -281,6 +283,28 @@ class SerialportSession extends Session {
                 });
             }
             break;
+        case 'microPython':
+            tool = new MicroPython(this.peripheral.path, config, this.userDataPath,
+                this.toolsPath, this.sendstd.bind(this));
+            try {
+                await this.disconnect();
+                await tool.flash(code, library);
+
+                const _baudRate = this.peripheralParams.peripheralConfig.config.baudRate;
+                await this.connect(this.peripheralParams, true);
+                await this.updateBaudrate({baudRate: 115200});
+                this.sendstd(`${ansi.clear}Reset device\n`);
+                await this.write({message: '04', encoding: 'hex'});
+                await this.updateBaudrate({baudRate: _baudRate});
+
+                this.sendRemoteRequest('uploadSuccess', null);
+            } catch (err) {
+                this.sendRemoteRequest('uploadError', {
+                    message: ansi.red + err
+                });
+                this.sendRemoteRequest('peripheralUnplug', null);
+            }
+            break;
         case 'microbit':
             tool = new Microbit(this.peripheral.path, config, this.userDataPath,
                 this.toolsPath, this.sendstd.bind(this));
@@ -298,7 +322,7 @@ class SerialportSession extends Session {
                 this.sendRemoteRequest('uploadSuccess', null);
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
-                    message: ansi.red + err.message
+                    message: ansi.red + err
                 });
                 this.sendRemoteRequest('peripheralUnplug', null);
             }
