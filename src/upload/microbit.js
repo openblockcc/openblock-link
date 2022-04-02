@@ -28,10 +28,6 @@ class Microbit {
         this._codefilePath = path.join(this._projectPath, 'main.py');
     }
 
-    _insertStr (soure, start, newStr) {
-        return soure.slice(0, start) + newStr + soure.slice(start);
-    }
-
     async flash (code, library = []) {
         const fileToPut = [];
 
@@ -77,6 +73,8 @@ class Microbit {
     }
 
     ufsTestFirmware () {
+        this._sendstd(`Try to enter raw REPL.\n`);
+
         return new Promise(resolve => {
             const ufs = spawn(this._pyPath, [this._ufsPath, 'ls']);
 
