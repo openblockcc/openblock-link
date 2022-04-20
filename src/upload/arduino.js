@@ -58,7 +58,9 @@ class Arduino {
 
             const args = [
                 'compile',
+				'--upload',
                 '--fqbn', this._config.fqbn,
+				`-p${this._peripheralPath}`,
                 '--libraries', path.join(this._arduinoPath, 'libraries'),
                 '--warnings=none',
                 '--verbose',
@@ -68,7 +70,7 @@ class Arduino {
             // if extensions library to not empty
             library.forEach(lib => {
                 if (fs.existsSync(lib)) {
-                    args.splice(5, 0, '--libraries', lib);
+                    args.splice(7, 0, '--libraries', lib);
                 }
             });
 
@@ -94,7 +96,14 @@ class Arduino {
                 this._sendstd(`${ansi.clear}\r\n`); // End ansi color setting
                 switch (outCode) {
                 case 0:
-                    return resolve('Success');
+                    if (this._config.fqbn === 'arduino:avr:leonardo' || this._config.fqbn === 'SparkFun:avr:makeymakey') {
+                        // Waiting for leonardo usb rerecognize.
+                        const wait = ms => new Promise(relv => setTimeout(relv, ms));
+                        wait(1000).then(() => resolve('Success'));
+                    } else {
+                        return resolve('Success');
+                    }
+					      break;
                 case 1:
                     return reject(new Error('Build failed'));
                 case 2:

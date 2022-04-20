@@ -114,7 +114,7 @@ class Microbit {
             const uflash = spawn(this._pyPath, [this._uflashPath]);
 
             this._sendstd(`${ansi.green_dark}Start flash firmware...\n`);
-            this._sendstd(`${ansi.clear}This step will take tens of seconds, pelese wait.\n`);
+            this._sendstd(`${ansi.clear}This step will take tens of seconds, please wait.\n`);
 
             // Add finish flasg to solve uflash will exit immediately after start, nut not exit
             // after flash finish. So add a counter flag in order to ensure that enough time has
