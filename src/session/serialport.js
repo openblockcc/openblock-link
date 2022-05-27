@@ -1,4 +1,4 @@
-const SerialPort = require('serialport');
+const {SerialPort} = require('serialport');
 const ansi = require('ansi-string');
 
 const Session = require('./session');
@@ -21,7 +21,7 @@ class SerialportSession extends Session {
         this.connectStateDetectorTimer = null;
         this.peripheralsScanorTimer = null;
         this.isRead = false;
-        this.isIndisconnect = false;
+        this.isInDisconnect = false;
     }
 
     async didReceiveCall (method, params, completion) {
@@ -111,13 +111,13 @@ class SerialportSession extends Session {
         }
     }
 
-    connect (params, afterUpload = null) {
+    connect (params, isConnectAfterUpload = false) {
         return new Promise((resolve, reject) => {
             if (this.peripheral && this.peripheral.isOpen === true) {
                 return reject(new Error('already connected to peripheral'));
             }
-            const {peripheralId} = params;
-            const {peripheralConfig} = params;
+            const {peripheralId, peripheralConfig} = params;
+
             const peripheral = this.reportedPeripherals[peripheralId];
             if (!peripheral) {
                 return reject(new Error(`invalid peripheral ID: ${peripheralId}`));
@@ -126,41 +126,59 @@ class SerialportSession extends Session {
                 clearInterval(this.peripheralsScanorTimer);
                 this.peripheralsScanorTimer = null;
             }
-            const port = new SerialPort(peripheral.path, {
+            const port = new SerialPort({
+                path: peripheral.path,
                 baudRate: peripheralConfig.config.baudRate,
                 dataBits: peripheralConfig.config.dataBits,
                 stopBits: peripheralConfig.config.stopBits,
-                autoOpen: false,
-                rtscts: peripheralConfig.config.rtscts ? peripheralConfig.config.rtscts : false
+                autoOpen: false
             });
+            const rts = (typeof peripheralConfig.config.rts === 'undefined') ? true : peripheralConfig.config.rts;
+            const dtr = (typeof peripheralConfig.config.dtr === 'undefined') ? true : peripheralConfig.config.dtr;
+
             try {
-                port.open(error => {
-                    if (error) {
-                        if (afterUpload === true) {
+                port.open(openErr => {
+                    if (openErr) {
+                        if (isConnectAfterUpload === true) {
                             this.sendRemoteRequest('peripheralUnplug', null);
                         }
-                        return reject(new Error(error));
+                        return reject(new Error(openErr));
                     }
 
-                    this.peripheral = port;
-                    this.peripheralParams = params;
+                    port.set({rts: rts, dtr: dtr}, setErr => {
+                        if (setErr) {
+                            if (isConnectAfterUpload === true) {
+                                this.sendRemoteRequest('peripheralUnplug', null);
+                            }
+                            return reject(new Error(setErr));
+                        }
 
-                    // Scan COM status prevent device pulled out
-                    this.connectStateDetectorTimer = setInterval(() => {
-                        if (this.peripheral.isOpen === false) {
-                            clearInterval(this.connectStateDetectorTimer);
+                        this.peripheral = port;
+                        this.peripheralParams = params;
+
+                        // Scan COM status prevent device pulled out
+                        this.connectStateDetectorTimer = setInterval(() => {
+                            if (this.peripheral.isOpen === false) {
+                                clearInterval(this.connectStateDetectorTimer);
+                                this.disconnect();
+                                this.sendRemoteRequest('peripheralUnplug', null);
+                            }
+                        }, 10);
+
+                        // Only when the receiver function is set, can isopen detect that the device is pulled out
+                        // A strange features of npm serialport package
+                        port.on('data', rev => {
+                            this.onMessageCallback(rev);
+                        });
+
+                        port.on('error', error => {
+                            console.log('OpenBlock Link Error:', error);
                             this.disconnect();
                             this.sendRemoteRequest('peripheralUnplug', null);
-                        }
-                    }, 10);
+                        });
 
-                    // Only when the receiver function is set, can isopen detect that the device is pulled out
-                    // A strange features of npm serialport package
-                    port.on('data', rev => {
-                        this.onMessageCallback(rev);
+                        resolve();
                     });
-
-                    resolve();
                 });
             } catch (err) {
                 reject(err);
@@ -180,13 +198,27 @@ class SerialportSession extends Session {
 
     updateBaudrate (params) {
         return new Promise((resolve, reject) => {
-            if (!this.isIndisconnect) {
+            if (!this.isInDisconnect) {
                 this.peripheralParams.peripheralConfig.config.baudRate = params.baudRate;
                 this.peripheral.update(params, err => {
                     if (err) {
                         return reject(new Error(`Error while attempting to update baudrate: ${err.message}`));
                     }
-                    return resolve();
+
+                    const rts = (typeof this.peripheralParams.peripheralConfig.config.rts === 'undefined') ?
+                        true : this.peripheralParams.peripheralConfig.config.rts;
+                    const dtr = (typeof this.peripheralParams.peripheralConfig.config.dtr === 'undefined') ?
+                        true : this.peripheralParams.peripheralConfig.config.dtr;
+
+                    // After update baudrate, the rts and dtr will be automatically modified,
+                    // we have to set them again.
+                    this.peripheral.set({rts: rts, dtr: dtr}, setErr => {
+                        if (setErr) {
+                            this.sendRemoteRequest('peripheralUnplug', null);
+                            return reject(new Error(setErr));
+                        }
+                        return resolve();
+                    });
                 });
             }
         });
@@ -198,7 +230,7 @@ class SerialportSession extends Session {
             const buffer = new Buffer.from(message, encoding);
 
             try {
-                if (!this.isIndisconnect) {
+                if (!this.isInDisconnect) {
                     this.peripheral.write(buffer, 'binary', err => {
                         if (err) {
                             return reject(new Error(`Error while attempting to write: ${err.message}`));
@@ -218,7 +250,7 @@ class SerialportSession extends Session {
     }
 
     disconnect () {
-        this.isIndisconnect = true;
+        this.isInDisconnect = true;
         return new Promise((resolve, reject) => {
             if (this.peripheral && this.peripheral.isOpen === true) {
                 if (this.connectStateDetectorTimer) {
@@ -228,19 +260,19 @@ class SerialportSession extends Session {
                 const peripheral = this.peripheral;
                 try {
                     peripheral.pause();
-                    // Wait for write finish prevent 'Error: Writing to COM port (GetOverlappedResult)'
-                    peripheral.drain(() => {
+                    // clear all cache data
+                    peripheral.flush(() => {
                         peripheral.close(error => {
                             if (error) {
-                                this.isIndisconnect = false;
+                                this.isInDisconnect = false;
                                 return reject(Error(error));
                             }
-                            this.isIndisconnect = false;
+                            this.isInDisconnect = false;
                             return resolve();
                         });
                     });
                 } catch (err) {
-                    this.isIndisconnect = false;
+                    this.isInDisconnect = false;
                     return reject(err);
                 }
             }
@@ -251,6 +283,8 @@ class SerialportSession extends Session {
         const {message, config, encoding, library} = params;
         const code = new Buffer.from(message, encoding).toString();
         let tool;
+
+        const {baudRate} = this.peripheralParams.peripheralConfig.config;
 
         switch (config.type) {
         case 'arduino':
@@ -287,18 +321,16 @@ class SerialportSession extends Session {
             try {
                 await this.disconnect();
                 await tool.flash(code, library);
-
-                const _baudRate = this.peripheralParams.peripheralConfig.config.baudRate;
                 await this.connect(this.peripheralParams, true);
                 await this.updateBaudrate({baudRate: 115200});
                 this.sendstd(`${ansi.clear}Reset device\n`);
                 await this.write({message: '04', encoding: 'hex'});
-                await this.updateBaudrate({baudRate: _baudRate});
+                await this.updateBaudrate({baudRate: baudRate});
 
                 this.sendRemoteRequest('uploadSuccess', null);
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
-                    message: ansi.red + err.message
+                    message: ansi.red + err
                 });
                 this.sendRemoteRequest('peripheralUnplug', null);
             }
@@ -353,7 +385,6 @@ class SerialportSession extends Session {
             clearInterval(this.peripheralsScanorTimer);
             this.peripheralsScanorTimer = null;
         }
-        this.isRead = false;
     }
 }
 

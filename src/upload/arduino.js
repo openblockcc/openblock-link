@@ -8,6 +8,7 @@ const AVRDUDE_STDOUT_GREEN_START = /Reading \||Writing \|/g;
 const AVRDUDE_STDOUT_GREEN_END = /%/g;
 const AVRDUDE_STDOUT_WHITE = /avrdude done/g;
 const AVRDUDE_STDOUT_RED_START = /can't open device|programmer is not responding/g;
+const AVRDUDE_STDERR_RED_IGNORE = /Executable segment sizes/g;
 
 class Arduino {
     constructor (peripheralPath, config, userDataPath, toolsPath, sendstd) {
@@ -75,7 +76,13 @@ class Arduino {
             const arduinoBuilder = spawn(this._arduinoCliPath, args);
 
             arduinoBuilder.stderr.on('data', buf => {
-                this._sendstd(ansi.red + buf.toString());
+                const data = buf.toString();
+
+                if (data.search(AVRDUDE_STDERR_RED_IGNORE) !== -1) { // eslint-disable-line no-negated-condition
+                    this._sendstd(data);
+                } else {
+                    this._sendstd(ansi.red + data);
+                }
             });
 
             arduinoBuilder.stdout.on('data', buf => {
@@ -103,6 +110,8 @@ class Arduino {
                     return reject(new Error('Invalid (argument for) commandline optiond'));
                 case 4:
                     return reject(new Error('Preference passed to --get-pref does not exist'));
+                default:
+                    return reject(new Error('Unknown error'));
                 }
             });
         });
@@ -113,7 +122,6 @@ class Arduino {
     }
 
     async flash (firmwarePath = null) {
-
         const args = [
             'upload',
             '--fqbn', this._config.fqbn,
@@ -121,6 +129,11 @@ class Arduino {
             '--verify',
             `-p${this._peripheralPath}`
         ];
+
+        // for k210 we must specify the programmer used as kflash
+        if (this._config.fqbn.startsWith('Maixduino:k210:')) {
+            args.push('-Pkflash');
+        }
 
         if (firmwarePath) {
             args.push('--input-file', firmwarePath, firmwarePath);
@@ -136,16 +149,16 @@ class Arduino {
 
                 // todo: Because the feacture of avrdude sends STD information intermittently.
                 // There should be a better way to handle these mesaage.
-                if (data.search(AVRDUDE_STDOUT_GREEN_START) != -1) { // eslint-disable-line eqeqeq
+                if (data.search(AVRDUDE_STDOUT_GREEN_START) !== -1) {
                     data = this._insertStr(data, data.search(AVRDUDE_STDOUT_GREEN_START), ansi.green_dark);
                 }
-                if (data.search(AVRDUDE_STDOUT_GREEN_END) != -1) { // eslint-disable-line eqeqeq
+                if (data.search(AVRDUDE_STDOUT_GREEN_END) !== -1) {
                     data = this._insertStr(data, data.search(AVRDUDE_STDOUT_GREEN_END) + 1, ansi.clear);
                 }
-                if (data.search(AVRDUDE_STDOUT_WHITE) != -1) { // eslint-disable-line eqeqeq
+                if (data.search(AVRDUDE_STDOUT_WHITE) !== -1) {
                     data = this._insertStr(data, data.search(AVRDUDE_STDOUT_WHITE), ansi.clear);
                 }
-                if (data.search(AVRDUDE_STDOUT_RED_START) != -1) { // eslint-disable-line eqeqeq
+                if (data.search(AVRDUDE_STDOUT_RED_START) !== -1) {
                     data = this._insertStr(data, data.search(AVRDUDE_STDOUT_RED_START), ansi.red);
                 }
                 this._sendstd(data);

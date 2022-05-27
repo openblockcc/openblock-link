@@ -6,6 +6,9 @@ const os = require('os');
 
 const FLASH_TIME = 25 * 1000; // 20s
 
+const UFLASH_MODULE_NAME = 'uflash';
+const MICROFS_MODULE_NAME = 'microfs';
+
 class Microbit {
     constructor (peripheralPath, config, userDataPath, toolsPath, sendstd) {
         this._peripheralPath = peripheralPath;
@@ -17,12 +20,8 @@ class Microbit {
 
         if (os.platform() === 'darwin') {
             this._pyPath = path.join(this._pythonPath, 'bin/python');
-            this._uflashPath = path.join(this._pythonPath, 'lib/python3.9/site-packages/uflash.py');
-            this._ufsPath = path.join(this._pythonPath, 'lib/python3.9/site-packages/microfs.py');
         } else {
             this._pyPath = path.join(this._pythonPath, 'python');
-            this._uflashPath = path.join(this._pythonPath, 'Scripts/uflash-script.py');
-            this._ufsPath = path.join(this._pythonPath, 'Scripts/ufs-script.py');
         }
 
         this._codefilePath = path.join(this._projectPath, 'main.py');
@@ -76,7 +75,7 @@ class Microbit {
         this._sendstd(`Try to enter raw REPL.\n`);
 
         return new Promise(resolve => {
-            const ufs = spawn(this._pyPath, [this._ufsPath, 'ls']);
+            const ufs = spawn(this._pyPath, ['-m', MICROFS_MODULE_NAME, 'ls']);
 
             ufs.stdout.on('data', buf => {
                 if (buf.toString().indexOf('Could not enter raw REPL.') !== -1){
@@ -90,7 +89,7 @@ class Microbit {
 
     ufsPut (file) {
         return new Promise((resolve, reject) => {
-            const ufs = spawn(this._pyPath, [this._ufsPath, 'put', file]);
+            const ufs = spawn(this._pyPath, ['-m', MICROFS_MODULE_NAME, 'put', file]);
 
             ufs.stdout.on('data', buf => {
                 this._sendstd(ansi.red + buf.toString());
@@ -103,7 +102,7 @@ class Microbit {
                     this._sendstd(`${file} write finish\n`);
                     return resolve('Success');
                 case 1:
-                    return reject(new Error('ufs failed to write'));
+                    return reject('ufs failed to write');
                 }
             });
         });
@@ -111,7 +110,7 @@ class Microbit {
 
     uflash () {
         return new Promise((resolve, reject) => {
-            const uflash = spawn(this._pyPath, [this._uflashPath]);
+            const uflash = spawn(this._pyPath, ['-m', UFLASH_MODULE_NAME]);
 
             this._sendstd(`${ansi.green_dark}Start flash firmware...\n`);
             this._sendstd(`${ansi.clear}This step will take tens of seconds, pelese wait.\n`);
@@ -143,7 +142,7 @@ class Microbit {
                     finish();
                     break;
                 case 1:
-                    return reject(new Error('uflash failed to flash'));
+                    return reject('uflash failed to flash');
                 }
             });
         });
