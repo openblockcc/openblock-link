@@ -3,6 +3,7 @@ const {spawn, spawnSync} = require('child_process');
 const path = require('path');
 const ansi = require('ansi-string');
 const yaml = require('js-yaml');
+const os = require('os');
 
 const AVRDUDE_STDOUT_GREEN_START = /Reading \||Writing \|/g;
 const AVRDUDE_STDOUT_GREEN_END = /%/g;
@@ -25,6 +26,12 @@ class Arduino {
         this._buildPath = path.join(this._projectfilePath, 'build');
 
         this.initArduinoCli();
+
+        // If the fqbn is an object means the value of this parameter is
+        // different under different systems.
+        if (typeof this._config.fqbn === 'object') {
+            this._config.fqbn = this._config.fqbn[os.platform()];
+        }
     }
 
     initArduinoCli () {
