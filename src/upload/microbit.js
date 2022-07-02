@@ -19,7 +19,7 @@ class Microbit {
         this._sendstd = sendstd;
 
         if (os.platform() === 'darwin') {
-            this._pyPath = path.join(this._pythonPath, 'bin/python');
+            this._pyPath = path.join(this._pythonPath, 'python3');
         } else {
             this._pyPath = path.join(this._pythonPath, 'python');
         }
