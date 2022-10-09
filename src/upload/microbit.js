@@ -20,6 +20,8 @@ class Microbit {
 
         if (os.platform() === 'darwin') {
             this._pyPath = path.join(this._pythonPath, 'python3');
+        } else if (os.platform() === 'linux') {
+            this._pyPath = path.join(this._pythonPath, 'bin/python3');
         } else {
             this._pyPath = path.join(this._pythonPath, 'python');
         }
