@@ -376,7 +376,7 @@ class SerialportSession extends Session {
         this.peripheral = null;
         this.peripheralParams = null;
         this.services = null;
-        this.reportedPeripherals = null;
+        this.reportedPeripherals = {};
         if (this.connectStateDetectorTimer) {
             clearInterval(this.connectStateDetectorTimer);
             this.connectStateDetectorTimer = null;
