@@ -123,7 +123,9 @@ class Session {
             this._completionHandlers[requestId] = completion;
         }
         try {
-            this._socket.send(JSON.stringify(request));
+            if (this._socket) {
+                this._socket.send(JSON.stringify(request));
+            }
         } catch (err) {
             console.log(`Error serializing or sending request: ${err}`);
             console.log(`Request was: ${request}`);

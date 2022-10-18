@@ -181,10 +181,16 @@ class Arduino {
                 switch (code) {
                 case 0:
                     if (this._config.fqbn === 'arduino:avr:leonardo' ||
-                            this._config.fqbn === 'SparkFun:avr:makeymakey') {
-                        // Waiting for leonardo usb rerecognize.
+                        this._config.fqbn === 'SparkFun:avr:makeymakey' ||
+                        this._config.fqbn.indexOf('rp2040:rp2040') !== -1) {
+                        // Waiting for usb rerecognize.
                         const wait = ms => new Promise(relv => setTimeout(relv, ms));
-                        wait(1000).then(() => resolve('Success'));
+                        // Darwin and linux will take more time to rerecognize device.
+                        if (os.platform() === 'darwin' || os.platform() === 'linux') {
+                            wait(3000).then(() => resolve('Success'));
+                        } else {
+                            wait(1000).then(() => resolve('Success'));
+                        }
                     } else {
                         return resolve('Success');
                     }
