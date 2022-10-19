@@ -22,6 +22,8 @@ class SerialportSession extends Session {
         this.peripheralsScanorTimer = null;
         this.isRead = false;
         this.isInDisconnect = false;
+
+        this.tool = null;
     }
 
     async didReceiveCall (method, params, completion) {
@@ -53,6 +55,9 @@ class SerialportSession extends Session {
             break;
         case 'uploadFirmware':
             completion(await this.uploadFirmware(params), null);
+            break;
+        case 'abort':
+            completion(await this.abortUploading(params), null);
             break;
         case 'getServices':
             completion((this.services || []).map(service => service.uuid), null);
@@ -282,23 +287,22 @@ class SerialportSession extends Session {
     async upload (params) {
         const {message, config, encoding, library} = params;
         const code = new Buffer.from(message, encoding).toString();
-        let tool;
 
         const {baudRate} = this.peripheralParams.peripheralConfig.config;
 
         switch (config.type) {
         case 'arduino':
-            tool = new Arduino(this.peripheral.path, config, this.userDataPath,
+            this.tool = new Arduino(this.peripheral.path, config, this.userDataPath,
                 this.toolsPath, this.sendstd.bind(this));
 
             try {
-                const exitCode = await tool.build(code, library);
+                const exitCode = await this.tool.build(code, library, this.signal);
                 if (exitCode === 'Success') {
                     try {
                         this.sendstd(`${ansi.clear}Disconnect serial port\n`);
                         await this.disconnect();
                         this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
-                        await tool.flash();
+                        await this.tool.flash(this.signal);
                         await this.connect(this.peripheralParams, true);
                         this.sendRemoteRequest('uploadSuccess', null);
                     } catch (err) {
@@ -316,11 +320,11 @@ class SerialportSession extends Session {
             }
             break;
         case 'microbit':
-            tool = new Microbit(this.peripheral.path, config, this.userDataPath,
+            this.tool = new Microbit(this.peripheral.path, config, this.userDataPath,
                 this.toolsPath, this.sendstd.bind(this));
             try {
                 await this.disconnect();
-                await tool.flash(code, library);
+                await this.tool.flash(code, library);
                 await this.connect(this.peripheralParams, true);
                 await this.updateBaudrate({baudRate: 115200});
                 this.sendstd(`${ansi.clear}Reset device\n`);
@@ -336,20 +340,20 @@ class SerialportSession extends Session {
             }
             break;
         }
+        
+        this.tool = null;
     }
 
     async uploadFirmware (params) {
-        let tool;
-
         switch (params.type) {
         case 'arduino':
-            tool = new Arduino(this.peripheral.path, params, this.userDataPath,
+            this.tool = new Arduino(this.peripheral.path, params, this.userDataPath,
                 this.toolsPath, this.sendstd.bind(this));
             try {
                 this.sendstd(`${ansi.clear}Disconnect serial port\n`);
                 await this.disconnect();
                 this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
-                await tool.flashRealtimeFirmware();
+                await this.tool.flashRealtimeFirmware();
                 await this.connect(this.peripheralParams, true);
                 this.sendRemoteRequest('uploadSuccess', null);
             } catch (err) {
@@ -357,6 +361,19 @@ class SerialportSession extends Session {
                     message: ansi.red + err.message
                 });
             }
+            break;
+        }
+        
+        this.tool = null;
+    }
+
+    async abortUploading (params) {
+        switch (params.config.type) {
+        case 'arduino':
+            if (this.tool !== null) {
+                this.tool.abortUploading();
+            }
+            this.tool = null;
             break;
         }
     }
