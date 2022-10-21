@@ -191,13 +191,8 @@ class Arduino {
             const listenAbortSignal = setInterval(() => {
                 if (this._beAbort) {
                     avrdude.kill();
-                    const wait = ms => new Promise(relv => setTimeout(relv, ms));
-                    // Darwin and linux will take more time to rerecognize device.
-                    if (os.platform() === 'darwin' || os.platform() === 'linux') {
-                        wait(3000).then(() => reject(new Error('Aborted')));
-                    } else {
-                        wait(1000).then(() => reject(new Error('Aborted')));
-                    }
+                    setTimeout(() => reject(new Error('Aborted')),
+                        CHECK_ABORT_STATE_TIME * 5);
                 }
             }, CHECK_ABORT_STATE_TIME);
 
