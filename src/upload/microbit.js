@@ -66,6 +66,9 @@ class Microbit {
         this._sendstd('Writing files...\n');
 
         for (const file of fileToPut) {
+            if (this._beAbort === true) {
+                return Promise.reject('Aborted');
+            }
             const ufsPutExitCode = await this.ufsPut(file);
             if (ufsPutExitCode !== 'Success') {
                 return Promise.reject(ufsPutExitCode);
@@ -111,15 +114,7 @@ class Microbit {
                 return resolve('Failed');
             });
 
-            const listenAbortSignal = setInterval(() => {
-                if (this._beAbort) {
-                    ufs.kill();
-                    return resolve('Aborted');
-                }
-            }, CHECK_ABORT_STATE_TIME);
-
             ufs.on('exit', outCode => {
-                clearInterval(listenAbortSignal);
                 switch (outCode) {
                 case 0:
                     this._sendstd(`${file} write finish\n`);
@@ -162,7 +157,7 @@ class Microbit {
             const listenAbortSignal = setInterval(() => {
                 if (this._beAbort) {
                     uflash.kill();
-                    return resolve('Aborted');
+                    return reject('Aborted');
                 }
             }, CHECK_ABORT_STATE_TIME);
 
