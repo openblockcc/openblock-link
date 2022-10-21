@@ -57,7 +57,7 @@ class SerialportSession extends Session {
             completion(await this.uploadFirmware(params), null);
             break;
         case 'abort':
-            completion(await this.abortUploading(params), null);
+            completion(await this.abortUpload(), null);
             break;
         case 'getServices':
             completion((this.services || []).map(service => service.uuid), null);
@@ -181,7 +181,6 @@ class SerialportSession extends Session {
                             this.disconnect();
                             this.sendRemoteRequest('peripheralUnplug', null);
                         });
-
                         resolve();
                     });
                 });
@@ -280,6 +279,8 @@ class SerialportSession extends Session {
                     this.isInDisconnect = false;
                     return reject(err);
                 }
+            } else {
+                return resolve();
             }
         });
     }
@@ -296,21 +297,22 @@ class SerialportSession extends Session {
                 this.toolsPath, this.sendstd.bind(this));
 
             try {
-                const exitCode = await this.tool.build(code, library, this.signal);
+                const exitCode = await this.tool.build(code, library);
                 if (exitCode === 'Success') {
                     try {
                         this.sendstd(`${ansi.clear}Disconnect serial port\n`);
                         await this.disconnect();
                         this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
-                        await this.tool.flash(this.signal);
+                        await this.tool.flash();
                         await this.connect(this.peripheralParams, true);
                         this.sendRemoteRequest('uploadSuccess', null);
                     } catch (err) {
                         this.sendRemoteRequest('uploadError', {
                             message: ansi.red + err.message
                         });
-                        // if error in flash step. It is considered that the device has been removed.
-                        this.sendRemoteRequest('peripheralUnplug', null);
+                        if (err.message !== 'Aborted') {
+                            this.sendRemoteRequest('peripheralUnplug', null);
+                        }
                     }
                 }
             } catch (err) {
@@ -334,9 +336,11 @@ class SerialportSession extends Session {
                 this.sendRemoteRequest('uploadSuccess', null);
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
-                    message: ansi.red + err
+                    message: ansi.red + err.message
                 });
-                this.sendRemoteRequest('peripheralUnplug', null);
+                if (err.message !== 'Aborted') {
+                    this.sendRemoteRequest('peripheralUnplug', null);
+                }
             }
             break;
         }
@@ -367,14 +371,9 @@ class SerialportSession extends Session {
         this.tool = null;
     }
 
-    async abortUploading (params) {
-        switch (params.config.type) {
-        case 'arduino':
-            if (this.tool !== null) {
-                this.tool.abortUploading();
-            }
-            this.tool = null;
-            break;
+    async abortUpload () {
+        if (this.tool !== null) {
+            this.tool.abortUpload();
         }
     }
 

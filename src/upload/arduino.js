@@ -107,7 +107,7 @@ class Arduino {
                 this._sendstd(ansiColor + data);
             });
 
-            const intervalID = setInterval(() => {
+            const listenAbortSignal = setInterval(() => {
                 if (this._beAbort) {
                     arduinoBuilder.kill();
                     return reject(new Error('Aborted'));
@@ -115,7 +115,7 @@ class Arduino {
             }, CHECK_ABORT_STATE_TIME);
 
             arduinoBuilder.on('exit', outCode => {
-                clearInterval(intervalID);
+                clearInterval(listenAbortSignal);
                 this._sendstd(`${ansi.clear}\r\n`); // End ansi color setting
                 switch (outCode) {
                 case 0:
@@ -188,16 +188,21 @@ class Arduino {
                 this._sendstd(data);
             });
 
-            const intervalID = setInterval(() => {
+            const listenAbortSignal = setInterval(() => {
                 if (this._beAbort) {
                     avrdude.kill();
-                    return reject(new Error('Aborted'));
+                    const wait = ms => new Promise(relv => setTimeout(relv, ms));
+                    // Darwin and linux will take more time to rerecognize device.
+                    if (os.platform() === 'darwin' || os.platform() === 'linux') {
+                        wait(3000).then(() => reject(new Error('Aborted')));
+                    } else {
+                        wait(1000).then(() => reject(new Error('Aborted')));
+                    }
                 }
             }, CHECK_ABORT_STATE_TIME);
 
-
             avrdude.on('exit', code => {
-                clearInterval(intervalID);
+                clearInterval(listenAbortSignal);
                 switch (code) {
                 case 0:
                     if (this._config.fqbn === 'arduino:avr:leonardo' ||
@@ -227,7 +232,7 @@ class Arduino {
         return this.flash(firmwarePath);
     }
 
-    abortUploading () {
+    abortUpload () {
         this._beAbort = true;
     }
 }
