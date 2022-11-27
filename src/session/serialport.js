@@ -149,8 +149,7 @@ class SerialportSession extends Session {
                             this.sendRemoteRequest('peripheralUnplug', null);
                         }
                         if (openErr.message.includes('Access denied')) {
-                            // TODO: display this error on gui.
-                            console.log('Access denied. please check the serial port');
+                            this.sendRemoteRequest('connectError', {message: 'Access denied'});
                         }
                         return reject(new Error(openErr));
                     }
