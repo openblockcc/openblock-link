@@ -11,6 +11,8 @@ const AVRDUDE_STDOUT_WHITE = /avrdude done/g;
 const AVRDUDE_STDOUT_RED_START = /can't open device|programmer is not responding/g;
 const AVRDUDE_STDERR_RED_IGNORE = /Executable segment sizes/g;
 
+const ABORT_STATE_CHECK_INTERVAL = 100;
+
 class Arduino {
     constructor (peripheralPath, config, userDataPath, toolsPath, sendstd) {
         this._peripheralPath = peripheralPath;
@@ -18,6 +20,8 @@ class Arduino {
         this._userDataPath = userDataPath;
         this._arduinoPath = path.join(toolsPath, 'Arduino');
         this._sendstd = sendstd;
+
+        this._abort = false;
 
         // If the fqbn is an object means the value of this parameter is
         // different under different systems.
@@ -57,6 +61,10 @@ class Arduino {
         }
     }
 
+    abortUpload () {
+        this._abort = true;
+    }
+
     build (code, library = []) {
         return new Promise((resolve, reject) => {
             if (!fs.existsSync(this._codeFolderPath)) {
@@ -87,6 +95,10 @@ class Arduino {
                 }
             });
 
+            if (this._abort) {
+                return resolve('Aborted');
+            }
+
             const arduinoBuilder = spawn(this._arduinoCliPath, args);
 
             arduinoBuilder.stderr.on('data', buf => {
@@ -111,9 +123,20 @@ class Arduino {
                 this._sendstd(ansiColor + data);
             });
 
+            const listenAbortSignal = setInterval(() => {
+                if (this._abort) {
+                    arduinoBuilder.kill();
+                    return resolve('Aborted');
+                }
+            }, ABORT_STATE_CHECK_INTERVAL);
+
             arduinoBuilder.on('exit', outCode => {
+                clearInterval(listenAbortSignal);
                 this._sendstd(`${ansi.clear}\r\n`); // End ansi color setting
                 switch (outCode) {
+                case null:
+                    // process be killed, do nothing.
+                    break;
                 case 0:
                     return resolve('Success');
                 case 1:

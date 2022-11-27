@@ -114,7 +114,7 @@ class Session {
             jsonrpc: '2.0',
             method
         };
-        if (params) {
+        if (typeof params !== 'undefined') {
             request.params = params;
         }
         if (completion) {

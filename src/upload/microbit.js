@@ -10,13 +10,16 @@ const UFLASH_MODULE_NAME = 'uflash';
 const MICROFS_MODULE_NAME = 'microfs';
 
 class Microbit {
-    constructor (peripheralPath, config, userDataPath, toolsPath, sendstd) {
+    constructor (peripheralPath, config, userDataPath, toolsPath, sendstd, sendRemoteRequest) {
         this._peripheralPath = peripheralPath;
         this._config = config;
         this._userDataPath = userDataPath;
         this._projectPath = path.join(userDataPath, 'microbit/project');
         this._pythonPath = path.join(toolsPath, 'Python');
         this._sendstd = sendstd;
+        this._sendRemoteRequest = sendRemoteRequest;
+
+        this._abort = false;
 
         if (os.platform() === 'darwin') {
             this._pyPath = path.join(this._pythonPath, 'python3');
@@ -27,6 +30,10 @@ class Microbit {
         }
 
         this._codefilePath = path.join(this._projectPath, 'main.py');
+    }
+
+    abortUpload () {
+        this._abort = true;
     }
 
     async flash (code, library = []) {
@@ -62,12 +69,17 @@ class Microbit {
 
         this._sendstd('Writing files...\n');
 
+        this._sendRemoteRequest('setUploadAbortEnabled', true);
         for (const file of fileToPut) {
+            if (this._abort === true) {
+                return Promise.resolve('Aborted');
+            }
             const ufsPutExitCode = await this.ufsPut(file);
             if (ufsPutExitCode !== 'Success') {
                 return Promise.reject(ufsPutExitCode);
             }
         }
+        this._sendRemoteRequest('setUploadAbortEnabled', false);
 
         this._sendstd(`${ansi.green_dark}Success\n`);
         return Promise.resolve('Success');
