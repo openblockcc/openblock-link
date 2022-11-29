@@ -62,6 +62,10 @@ class Microbit {
 
         const ufsTestExitCode = await this.ufsTestFirmware();
         if (ufsTestExitCode === 'Failed') {
+            if (this._abort === true) {
+                return Promise.resolve('Aborted');
+            }
+
             this._sendstd(`${ansi.yellow_dark}Could not enter raw REPL.\n`);
             this._sendstd(`${ansi.clear}Try to flash micropython for microbit firmware to fix.\n`);
             await this.uflash();
