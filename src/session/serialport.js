@@ -207,29 +207,31 @@ class SerialportSession extends Session {
 
     updateBaudrate (params) {
         return new Promise((resolve, reject) => {
-            if (!this.isInDisconnect) {
-                this.peripheralParams.peripheralConfig.config.baudRate = params.baudRate;
-                this.peripheral.update(params, err => {
-                    if (err) {
-                        return reject(new Error(`Error while attempting to update baudrate: ${err.message}`));
-                    }
-
-                    const rts = (typeof this.peripheralParams.peripheralConfig.config.rts === 'undefined') ?
-                        true : this.peripheralParams.peripheralConfig.config.rts;
-                    const dtr = (typeof this.peripheralParams.peripheralConfig.config.dtr === 'undefined') ?
-                        true : this.peripheralParams.peripheralConfig.config.dtr;
-
-                    // After update baudrate, the rts and dtr will be automatically modified,
-                    // we have to set them again.
-                    this.peripheral.set({rts: rts, dtr: dtr}, setErr => {
-                        if (setErr) {
-                            this.sendRemoteRequest('peripheralUnplug', null);
-                            return reject(new Error(setErr));
-                        }
-                        return resolve();
-                    });
-                });
+            if (this.isInDisconnect) {
+                return resolve();
             }
+            this.peripheralParams.peripheralConfig.config.baudRate = params.baudRate;
+            this.peripheral.update(params, err => {
+                if (err) {
+                    return reject(new Error(`Error while attempting to update baudrate: ${err.message}`));
+                }
+
+                const rts = (typeof this.peripheralParams.peripheralConfig.config.rts === 'undefined') ?
+                    true : this.peripheralParams.peripheralConfig.config.rts;
+                const dtr = (typeof this.peripheralParams.peripheralConfig.config.dtr === 'undefined') ?
+                    true : this.peripheralParams.peripheralConfig.config.dtr;
+
+                // After update baudrate, the rts and dtr will be automatically modified,
+                // we have to set them again.
+                this.peripheral.set({rts: rts, dtr: dtr}, setErr => {
+                    if (setErr) {
+                        this.sendRemoteRequest('peripheralUnplug', null);
+                        return reject(new Error(setErr));
+                    }
+                    return resolve();
+                });
+            });
+
         });
     }
 
