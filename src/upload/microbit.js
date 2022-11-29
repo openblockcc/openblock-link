@@ -79,7 +79,6 @@ class Microbit {
                 return Promise.reject(ufsPutExitCode);
             }
         }
-        this._sendRemoteRequest('setUploadAbortEnabled', false);
 
         this._sendstd(`${ansi.green_dark}Success\n`);
         return Promise.resolve('Success');
@@ -124,6 +123,8 @@ class Microbit {
 
     uflash () {
         return new Promise((resolve, reject) => {
+            this._sendRemoteRequest('setUploadAbortEnabled', false);
+
             const uflash = spawn(this._pyPath, ['-m', UFLASH_MODULE_NAME]);
 
             this._sendstd(`${ansi.green_dark}Start flash firmware...\n`);
