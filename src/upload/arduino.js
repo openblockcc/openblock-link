@@ -95,10 +95,6 @@ class Arduino {
                 }
             });
 
-            if (this._abort) {
-                return resolve('Aborted');
-            }
-
             const arduinoBuilder = spawn(this._arduinoCliPath, args);
 
             arduinoBuilder.stderr.on('data', buf => {
