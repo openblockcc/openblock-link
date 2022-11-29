@@ -323,7 +323,7 @@ class SerialportSession extends Session {
                         this.sendRemoteRequest('peripheralUnplug', null);
                     }
                 } else if (exitCode === 'Aborted') {
-                    this.sendRemoteRequest('uploadSuccess', null);
+                    this.sendRemoteRequest('uploadSuccess', {aborted: true});
                 }
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
@@ -336,14 +336,14 @@ class SerialportSession extends Session {
                 this.toolsPath, this.sendstd.bind(this), this.sendRemoteRequest.bind(this));
             try {
                 await this.disconnect();
-                await this.tool.flash(code, library);
+                const exitCode = await this.tool.flash(code, library);
                 await this.connect(this.peripheralParams, true);
                 await this.updateBaudrate({baudRate: 115200});
                 this.sendstd(`${ansi.clear}Reset device\n`);
                 await this.write({message: '04', encoding: 'hex'});
                 await this.updateBaudrate({baudRate: baudRate});
 
-                this.sendRemoteRequest('uploadSuccess', null);
+                this.sendRemoteRequest('uploadSuccess', {aborted: exitCode === 'Aborted'});
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
                     message: ansi.red + err.message
