@@ -20,6 +20,7 @@ class Arduino {
         this._userDataPath = userDataPath;
         this._arduinoPath = path.join(toolsPath, 'Arduino');
         this._sendstd = sendstd;
+        this._firmwareDir = path.join(toolsPath, '../firmwares/arduino');
 
         this._abort = false;
 
@@ -31,7 +32,7 @@ class Arduino {
 
         const projectPathName = `${this._config.fqbn.replace(/:/g, '_')}_project`.split(/_/).splice(0, 3)
             .join('_');
-        this._projectfilePath = path.join(userDataPath, 'arduino', projectPathName);
+        this._projectfilePath = path.join(this._userDataPath, 'arduino', projectPathName);
 
         this._arduinoCliPath = path.join(this._arduinoPath, 'arduino-cli');
 
@@ -49,16 +50,22 @@ class Arduino {
 
         // if arduino cli config haven be init, set it to link arduino path.
         const buf = spawnSync(this._arduinoCliPath, ['config', 'dump']);
-        const stdout = yaml.load(buf.stdout.toString());
+        try {
+            const stdout = yaml.load(buf.stdout.toString());
 
-        if (stdout.directories.data !== this._arduinoPath) {
-            this._sendstd(`${ansi.yellow_dark}arduino cli config has not been initialized yet.\n`);
-            this._sendstd(`${ansi.green_dark}set the path to ${this._arduinoPath}.\n`);
-            spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.data', this._arduinoPath]);
-            spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.downloads',
-                path.join(this._arduinoPath, 'staging')]);
-            spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.user', this._arduinoPath]);
+            if (stdout.directories.data !== this._arduinoPath) {
+                this._sendstd(`${ansi.yellow_dark}arduino cli config has not been initialized yet.\n`);
+                this._sendstd(`${ansi.green_dark}set the path to ${this._arduinoPath}.\n`);
+                spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.data', this._arduinoPath]);
+                spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.downloads',
+                    path.join(this._arduinoPath, 'staging')]);
+                spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.user', this._arduinoPath]);
+            }
+        } catch (err) {
+            this._sendstd(`${ansi.red}arduino cli init error`);
+            console.log(err);
         }
+
     }
 
     abortUpload () {
@@ -172,6 +179,7 @@ class Arduino {
             args.push('--input-file', firmwarePath, firmwarePath);
         } else {
             args.push('--input-dir', this._buildPath);
+            args.push(this._codeFolderPath);
         }
 
         return new Promise((resolve, reject) => {
@@ -229,7 +237,7 @@ class Arduino {
     }
 
     flashRealtimeFirmware () {
-        const firmwarePath = path.join(this._arduinoPath, '../../firmwares/arduino', this._config.firmware);
+        const firmwarePath = path.join(this._firmwareDir, this._config.firmware);
         return this.flash(firmwarePath);
     }
 }
