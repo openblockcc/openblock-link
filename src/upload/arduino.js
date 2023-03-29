@@ -128,6 +128,7 @@ class Arduino {
 
             const listenAbortSignal = setInterval(() => {
                 if (this._abort) {
+                    clearInterval(listenAbortSignal);
                     arduinoBuilder.kill();
                     return resolve('Aborted');
                 }
@@ -211,14 +212,27 @@ class Arduino {
                 this._sendstd(data);
             });
 
+            const listenAbortSignal = setInterval(() => {
+                if (this._abort) {
+                    clearInterval(listenAbortSignal);
+                    if (os.platform() === 'darwin') {
+                        // TODO kill proccess
+                    } else if (os.platform() === 'linux') {
+                        // TODO kill proccess
+                    } else {
+                        spawnSync('taskkill', ['/pid', avrdude.pid, '/f', '/t']);
+                    }
+                }
+            }, ABORT_STATE_CHECK_INTERVAL);
+
             avrdude.on('exit', code => {
+                const wait = ms => new Promise(relv => setTimeout(relv, ms));
                 switch (code) {
                 case 0:
                     if (this._config.fqbn === 'arduino:avr:leonardo' ||
                         this._config.fqbn === 'SparkFun:avr:makeymakey' ||
                         this._config.fqbn.indexOf('rp2040:rp2040') !== -1) {
                         // Waiting for usb rerecognize.
-                        const wait = ms => new Promise(relv => setTimeout(relv, ms));
                         // Darwin and linux will take more time to rerecognize device.
                         if (os.platform() === 'darwin' || os.platform() === 'linux') {
                             wait(3000).then(() => resolve('Success'));
@@ -230,7 +244,12 @@ class Arduino {
                     }
                     break;
                 case 1:
-                    return reject(new Error('avrdude failed to flash'));
+                    if (this._abort) {
+                        // Wait for 100ms before returning to prevent the serial port from being released.
+                        wait(100).then(() => resolve('Aborted'));
+                    } else {
+                        return reject(new Error('avrdude failed to flash'));
+                    }
                 }
             });
         });

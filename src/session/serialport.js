@@ -146,10 +146,16 @@ class SerialportSession extends Session {
                 port.open(openErr => {
                     if (openErr) {
                         if (isConnectAfterUpload === true) {
+                            this.sendRemoteRequest('uploadError', {
+                                message: ansi.red + openErr.message
+                            });
                             this.sendRemoteRequest('peripheralUnplug', null);
                         }
                         if (openErr.message.includes('Access denied')) {
                             this.sendRemoteRequest('connectError', {message: 'Access denied'});
+                        }
+                        if (openErr.message.includes('Open (SetCommState): Unknown error code 31')) {
+                            this.sendRemoteRequest('connectError', {message: 'Unknown error code 31'});
                         }
                         return reject(new Error(openErr));
                     }
@@ -308,13 +314,12 @@ class SerialportSession extends Session {
                 const exitCode = await this.tool.build(code, library);
                 if (exitCode === 'Success') {
                     try {
-                        this.sendRemoteRequest('setUploadAbortEnabled', false);
                         this.sendstd(`${ansi.clear}Disconnect serial port\n`);
                         await this.disconnect();
                         this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
-                        await this.tool.flash();
+                        const flashExitCode = await this.tool.flash();
                         await this.connect(this.peripheralParams, true);
-                        this.sendRemoteRequest('uploadSuccess', null);
+                        this.sendRemoteRequest('uploadSuccess', {aborted: flashExitCode === 'Aborted'});
                     } catch (err) {
                         this.sendRemoteRequest('uploadError', {
                             message: ansi.red + err.message
