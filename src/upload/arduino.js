@@ -213,12 +213,10 @@ class Arduino {
 
             const listenAbortSignal = setInterval(() => {
                 if (this._abort) {
-                    if (os.platform() === 'darwin') {
-                        // TODO kill proccess
-                    } else if (os.platform() === 'linux') {
-                        // TODO kill proccess
-                    } else {
+                    if (os.platform() === 'win32') {
                         spawnSync('taskkill', ['/pid', avrdude.pid, '/f', '/t']);
+                    } else {
+                        avrdude.kill();
                     }
                 }
             }, ABORT_STATE_CHECK_INTERVAL);
