@@ -367,12 +367,13 @@ class SerialportSession extends Session {
             this.tool = new Arduino(this.peripheral.path, params, this.userDataPath,
                 this.toolsPath, this.sendstd.bind(this));
             try {
+                this.sendRemoteRequest('setUploadAbortEnabled', true);
                 this.sendstd(`${ansi.clear}Disconnect serial port\n`);
                 await this.disconnect();
                 this.sendstd(`${ansi.clear}Disconnected successfully, flash program starting...\n`);
-                await this.tool.flashRealtimeFirmware();
+                const flashExitCode = await this.tool.flashRealtimeFirmware();
                 await this.connect(this.peripheralParams, true);
-                this.sendRemoteRequest('uploadSuccess', null);
+                this.sendRemoteRequest('uploadSuccess', {aborted: flashExitCode === 'Aborted'});
             } catch (err) {
                 this.sendRemoteRequest('uploadError', {
                     message: ansi.red + err.message

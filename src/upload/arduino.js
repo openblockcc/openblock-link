@@ -128,7 +128,6 @@ class Arduino {
 
             const listenAbortSignal = setInterval(() => {
                 if (this._abort) {
-                    clearInterval(listenAbortSignal);
                     arduinoBuilder.kill();
                     return resolve('Aborted');
                 }
@@ -214,7 +213,6 @@ class Arduino {
 
             const listenAbortSignal = setInterval(() => {
                 if (this._abort) {
-                    clearInterval(listenAbortSignal);
                     if (os.platform() === 'darwin') {
                         // TODO kill proccess
                     } else if (os.platform() === 'linux') {
@@ -226,6 +224,7 @@ class Arduino {
             }, ABORT_STATE_CHECK_INTERVAL);
 
             avrdude.on('exit', code => {
+                clearInterval(listenAbortSignal);
                 const wait = ms => new Promise(relv => setTimeout(relv, ms));
                 switch (code) {
                 case 0:
