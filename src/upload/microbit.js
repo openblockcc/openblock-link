@@ -6,6 +6,8 @@ const os = require('os');
 
 const FLASH_TIME = 25 * 1000; // 20s
 
+const ABORT_STATE_CHECK_INTERVAL = 100;
+
 const UFLASH_MODULE_NAME = 'uflash';
 const MICROFS_MODULE_NAME = 'microfs';
 
@@ -62,28 +64,30 @@ class Microbit {
 
         const ufsTestExitCode = await this.ufsTestFirmware();
         if (ufsTestExitCode === 'Failed') {
-            if (this._abort === true) {
-                return Promise.resolve('Aborted');
-            }
-
             this._sendstd(`${ansi.yellow_dark}Could not enter raw REPL.\n`);
             this._sendstd(`${ansi.clear}Try to flash micropython for microbit firmware to fix.\n`);
             await this.uflash();
         }
 
+        if (this._abort === true) {
+            return Promise.resolve('Aborted');
+        }
+
         this._sendstd('Writing files...\n');
 
-        this._sendRemoteRequest('setUploadAbortEnabled', true);
         for (const file of fileToPut) {
-            if (this._abort === true) {
-                return Promise.resolve('Aborted');
-            }
             const ufsPutExitCode = await this.ufsPut(file);
-            if (ufsPutExitCode !== 'Success') {
+            if (ufsPutExitCode !== 'Success' && ufsPutExitCode !== 'Aborted') {
                 return Promise.reject(ufsPutExitCode);
+            }
+            if (this._abort === true) {
+                break;
             }
         }
 
+        if (this._abort === true) {
+            return Promise.resolve('Aborted');
+        }
         this._sendstd(`${ansi.green_dark}Success\n`);
         return Promise.resolve('Success');
     }
@@ -94,13 +98,23 @@ class Microbit {
         return new Promise(resolve => {
             const ufs = spawn(this._pyPath, ['-m', MICROFS_MODULE_NAME, 'ls']);
 
-            ufs.stdout.on('data', buf => {
-                if (buf.toString().indexOf('Could not enter raw REPL.') !== -1){
+            const listenAbortSignal = setInterval(() => {
+                if (this._abort) {
+                    ufs.kill();
+                }
+            }, ABORT_STATE_CHECK_INTERVAL);
+
+            ufs.on('exit', outCode => {
+                clearInterval(listenAbortSignal);
+                switch (outCode) {
+                case null:
+                    return resolve('Aborted');
+                case 0:
+                    return resolve('Success');
+                case 1: // Could not enter raw REPL.
                     return resolve('Failed');
                 }
             });
-
-            ufs.on('exit', () => resolve('Success'));
         });
     }
 
@@ -113,8 +127,17 @@ class Microbit {
                 return resolve('Failed');
             });
 
+            const listenAbortSignal = setInterval(() => {
+                if (this._abort) {
+                    ufs.kill();
+                }
+            }, ABORT_STATE_CHECK_INTERVAL);
+
             ufs.on('exit', outCode => {
+                clearInterval(listenAbortSignal);
                 switch (outCode) {
+                case null:
+                    return resolve('Aborted');
                 case 0:
                     this._sendstd(`${file} write finish\n`);
                     return resolve('Success');
@@ -127,6 +150,8 @@ class Microbit {
 
     uflash () {
         return new Promise((resolve, reject) => {
+            // For some unknown reason, uflash cannot be killed in the test, so the termination button is disabled
+            // when uflash is running.
             this._sendRemoteRequest('setUploadAbortEnabled', false);
 
             const uflash = spawn(this._pyPath, ['-m', UFLASH_MODULE_NAME]);

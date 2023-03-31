@@ -340,6 +340,7 @@ class SerialportSession extends Session {
             this.tool = new Microbit(this.peripheral.path, config, this.userDataPath,
                 this.toolsPath, this.sendstd.bind(this), this.sendRemoteRequest.bind(this));
             try {
+                this.sendRemoteRequest('setUploadAbortEnabled', true);
                 await this.disconnect();
                 const exitCode = await this.tool.flash(code, library);
                 await this.connect(this.peripheralParams, true);
