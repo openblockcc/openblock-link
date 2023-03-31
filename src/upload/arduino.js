@@ -62,8 +62,7 @@ class Arduino {
                 spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.user', this._arduinoPath]);
             }
         } catch (err) {
-            this._sendstd(`${ansi.red}arduino cli init error`);
-            console.log(err);
+            this._sendstd(`${ansi.red}arduino cli init error:`, err);
         }
 
     }
@@ -129,7 +128,6 @@ class Arduino {
             const listenAbortSignal = setInterval(() => {
                 if (this._abort) {
                     arduinoBuilder.kill();
-                    return resolve('Aborted');
                 }
             }, ABORT_STATE_CHECK_INTERVAL);
 
@@ -139,7 +137,7 @@ class Arduino {
                 switch (outCode) {
                 case null:
                     // process be killed, do nothing.
-                    break;
+                    return resolve('Aborted');
                 case 0:
                     return resolve('Success');
                 case 1:
