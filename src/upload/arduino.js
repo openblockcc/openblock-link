@@ -45,12 +45,12 @@ class Arduino {
     }
 
     initArduinoCli () {
-        // try to init the arduino cli config.
-        spawnSync(this._arduinoCliPath, ['config', 'init']);
-
-        // if arduino cli config haven be init, set it to link arduino path.
-        const buf = spawnSync(this._arduinoCliPath, ['config', 'dump']);
         try {
+        // try to init the arduino cli config.
+            spawnSync(this._arduinoCliPath, ['config', 'init']);
+
+            // if arduino cli config haven be init, set it to link arduino path.
+            const buf = spawnSync(this._arduinoCliPath, ['config', 'dump']);
             const stdout = yaml.load(buf.stdout.toString());
 
             if (stdout.directories.data !== this._arduinoPath) {
