@@ -102,6 +102,7 @@ class Arduino {
             });
 
             const arduinoBuilder = spawn(this._arduinoCliPath, args);
+            this._sendstd(`Start building...\n`);
 
             arduinoBuilder.stderr.on('data', buf => {
                 const data = buf.toString();
