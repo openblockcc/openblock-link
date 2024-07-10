@@ -38,7 +38,7 @@ class Microbit {
         this._abort = true;
     }
 
-    async flash (code, library = []) {
+    async flash (code) {
         const fileToPut = [];
 
         if (!fs.existsSync(this._projectPath)) {
@@ -53,7 +53,7 @@ class Microbit {
 
         fileToPut.push(this._codefilePath);
 
-        library.forEach(lib => {
+        this._config.library.forEach(lib => {
             if (fs.existsSync(lib)) {
                 const libraries = fs.readdirSync(lib);
                 libraries.forEach(file => {

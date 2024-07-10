@@ -71,7 +71,7 @@ class Arduino {
         this._abort = true;
     }
 
-    build (code, library = []) {
+    build (code) {
         return new Promise((resolve, reject) => {
             if (!fs.existsSync(this._codeFolderPath)) {
                 fs.mkdirSync(this._codeFolderPath, {recursive: true});
@@ -95,9 +95,9 @@ class Arduino {
             ];
 
             // if extensions library to not empty
-            library.forEach(lib => {
+            this._config.library.forEach(lib => {
                 if (fs.existsSync(lib)) {
-                    args.splice(5, 0, '--libraries', lib);
+                    args.splice(3, 0, '--libraries', lib);
                 }
             });
 

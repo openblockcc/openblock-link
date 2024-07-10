@@ -299,7 +299,7 @@ class SerialportSession extends Session {
     }
 
     async upload (params) {
-        const {message, config, encoding, library} = params;
+        const {message, config, encoding} = params;
         const code = new Buffer.from(message, encoding).toString();
 
         const {baudRate} = this.peripheralParams.peripheralConfig.config;
@@ -311,7 +311,7 @@ class SerialportSession extends Session {
 
             try {
                 this.sendRemoteRequest('setUploadAbortEnabled', true);
-                const exitCode = await this.tool.build(code, library);
+                const exitCode = await this.tool.build(code);
                 if (exitCode === 'Success') {
                     try {
                         this.sendstd(`${ansi.clear}Disconnect serial port\n`);
@@ -342,7 +342,7 @@ class SerialportSession extends Session {
             try {
                 this.sendRemoteRequest('setUploadAbortEnabled', true);
                 await this.disconnect();
-                const exitCode = await this.tool.flash(code, library);
+                const exitCode = await this.tool.flash(code);
                 await this.connect(this.peripheralParams, true);
                 await this.updateBaudrate({baudRate: 115200});
                 this.sendstd(`${ansi.clear}Reset device\n`);
