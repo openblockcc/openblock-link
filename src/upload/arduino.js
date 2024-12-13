@@ -5,11 +5,11 @@ const ansi = require('ansi-string');
 const yaml = require('js-yaml');
 const os = require('os');
 
-const AVRDUDE_STDOUT_GREEN_START = /Reading \||Writing \|/g;
-const AVRDUDE_STDOUT_GREEN_END = /%/g;
-const AVRDUDE_STDOUT_WHITE = /avrdude done/g;
-const AVRDUDE_STDOUT_RED_START = /can't open device|programmer is not responding/g;
-const AVRDUDE_STDERR_RED_IGNORE = /Executable segment sizes/g;
+const ARDUINO_CLI_STDOUT_GREEN_START = /Reading \||Writing \|/g;
+const ARDUINO_CLI_STDOUT_GREEN_END = /%/g;
+const ARDUINO_CLI_STDOUT_WHITE = /avrdude done/g;
+const ARDUINO_CLI_STDOUT_RED_START = /can't open device|programmer is not responding/g;
+const ARDUINO_CLI_STDERR_RED_IGNORE = /Executable segment sizes/g;
 
 const ABORT_STATE_CHECK_INTERVAL = 100;
 
@@ -101,20 +101,20 @@ class Arduino {
                 }
             });
 
-            const arduinoBuilder = spawn(this._arduinoCliPath, args);
+            const arduinoCli = spawn(this._arduinoCliPath, args);
             this._sendstd(`Start building...\n`);
 
-            arduinoBuilder.stderr.on('data', buf => {
+            arduinoCli.stderr.on('data', buf => {
                 const data = buf.toString();
 
-                if (data.search(AVRDUDE_STDERR_RED_IGNORE) !== -1) { // eslint-disable-line no-negated-condition
-                    this._sendstd(data);
+                if (data.search(ARDUINO_CLI_STDERR_RED_IGNORE) !== -1) { // eslint-disable-line no-negated-condition
+                    this._sendstd(ansi.red + data);
                 } else {
                     this._sendstd(ansi.red + data);
                 }
             });
 
-            arduinoBuilder.stdout.on('data', buf => {
+            arduinoCli.stdout.on('data', buf => {
                 const data = buf.toString();
                 let ansiColor = null;
 
@@ -128,11 +128,11 @@ class Arduino {
 
             const listenAbortSignal = setInterval(() => {
                 if (this._abort) {
-                    arduinoBuilder.kill();
+                    arduinoCli.kill();
                 }
             }, ABORT_STATE_CHECK_INTERVAL);
 
-            arduinoBuilder.on('exit', outCode => {
+            arduinoCli.on('exit', outCode => {
                 clearInterval(listenAbortSignal);
                 this._sendstd(`${ansi.clear}\r\n`); // End ansi color setting
                 switch (outCode) {
@@ -182,29 +182,29 @@ class Arduino {
         }
 
         return new Promise((resolve, reject) => {
-            const avrdude = spawn(this._arduinoCliPath, args);
+            const arduinoCli = spawn(this._arduinoCliPath, args);
 
-            avrdude.stderr.on('data', buf => {
+            arduinoCli.stderr.on('data', buf => {
                 let data = buf.toString();
 
                 // todo: Because the feacture of avrdude sends STD information intermittently.
                 // There should be a better way to handle these mesaage.
-                if (data.search(AVRDUDE_STDOUT_GREEN_START) !== -1) {
-                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_GREEN_START), ansi.green_dark);
+                if (data.search(ARDUINO_CLI_STDOUT_GREEN_START) !== -1) {
+                    data = this._insertStr(data, data.search(ARDUINO_CLI_STDOUT_GREEN_START), ansi.green_dark);
                 }
-                if (data.search(AVRDUDE_STDOUT_GREEN_END) !== -1) {
-                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_GREEN_END) + 1, ansi.clear);
+                if (data.search(ARDUINO_CLI_STDOUT_GREEN_END) !== -1) {
+                    data = this._insertStr(data, data.search(ARDUINO_CLI_STDOUT_GREEN_END) + 1, ansi.clear);
                 }
-                if (data.search(AVRDUDE_STDOUT_WHITE) !== -1) {
-                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_WHITE), ansi.clear);
+                if (data.search(ARDUINO_CLI_STDOUT_WHITE) !== -1) {
+                    data = this._insertStr(data, data.search(ARDUINO_CLI_STDOUT_WHITE), ansi.clear);
                 }
-                if (data.search(AVRDUDE_STDOUT_RED_START) !== -1) {
-                    data = this._insertStr(data, data.search(AVRDUDE_STDOUT_RED_START), ansi.red);
+                if (data.search(ARDUINO_CLI_STDOUT_RED_START) !== -1) {
+                    data = this._insertStr(data, data.search(ARDUINO_CLI_STDOUT_RED_START), ansi.red);
                 }
                 this._sendstd(data);
             });
 
-            avrdude.stdout.on('data', buf => {
+            arduinoCli.stdout.on('data', buf => {
                 // It seems that avrdude didn't use stdout.
                 const data = buf.toString();
                 this._sendstd(data);
@@ -213,14 +213,14 @@ class Arduino {
             const listenAbortSignal = setInterval(() => {
                 if (this._abort) {
                     if (os.platform() === 'win32') {
-                        spawnSync('taskkill', ['/pid', avrdude.pid, '/f', '/t']);
+                        spawnSync('taskkill', ['/pid', arduinoCli.pid, '/f', '/t']);
                     } else {
-                        avrdude.kill();
+                        arduinoCli.kill();
                     }
                 }
             }, ABORT_STATE_CHECK_INTERVAL);
 
-            avrdude.on('exit', code => {
+            arduinoCli.on('exit', code => {
                 clearInterval(listenAbortSignal);
                 const wait = ms => new Promise(relv => setTimeout(relv, ms));
                 switch (code) {
