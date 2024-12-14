@@ -32,34 +32,37 @@ class Arduino {
 
         const projectPathName = `${this._config.fqbn.replace(/:/g, '_')}_project`.split(/_/).splice(0, 3)
             .join('_');
-        this._projectfilePath = path.join(this._userDataPath, 'arduino', projectPathName);
+        this._configFilePath = path.join(this._userDataPath, 'arduino/arduino-cli.yaml');
+        this._projectFilePath = path.join(this._userDataPath, 'arduino', projectPathName);
 
         this._arduinoCliPath = path.join(this._arduinoPath, 'arduino-cli');
 
-        this._codeFolderPath = path.join(this._projectfilePath, 'code');
-        this._codefilePath = path.join(this._codeFolderPath, 'code.ino');
-        this._buildPath = path.join(this._projectfilePath, 'build');
-        this._buildCachePath = path.join(this._projectfilePath, 'buildCache');
+        this._codeFolderPath = path.join(this._projectFilePath, 'code');
+        this._codeFilePath = path.join(this._codeFolderPath, 'code.ino');
+        this._buildPath = path.join(this._projectFilePath, 'build');
+        this._buildCachePath = path.join(this._projectFilePath, 'buildCache');
 
         this.initArduinoCli();
     }
 
     initArduinoCli () {
         // try to init the arduino cli config.
-        spawnSync(this._arduinoCliPath, ['config', 'init']);
+        spawnSync(this._arduinoCliPath, ['config', 'init', '--dest-file', this._configFilePath]);
 
         // if arduino cli config haven be init, set it to link arduino path.
-        const buf = spawnSync(this._arduinoCliPath, ['config', 'dump']);
+        const buf = spawnSync(this._arduinoCliPath, ['config', 'dump', '--config-file', this._configFilePath]);
         try {
             const stdout = yaml.load(buf.stdout.toString());
 
             if (stdout.directories.data !== this._arduinoPath) {
                 this._sendstd(`${ansi.yellow_dark}arduino cli config has not been initialized yet.\n`);
                 this._sendstd(`${ansi.green_dark}set the path to ${this._arduinoPath}.\n`);
-                spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.data', this._arduinoPath]);
+                spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.data', this._arduinoPath,
+                    '--config-file', this._configFilePath]);
                 spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.downloads',
-                    path.join(this._arduinoPath, 'staging')]);
-                spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.user', this._arduinoPath]);
+                    path.join(this._arduinoPath, 'staging'), '--config-file', this._configFilePath]);
+                spawnSync(this._arduinoCliPath, ['config', 'set', 'directories.user', this._arduinoPath,
+                    '--config-file', this._configFilePath]);
             }
         } catch (err) {
             this._sendstd(`${ansi.red}arduino cli init error:`, err);
@@ -78,7 +81,7 @@ class Arduino {
             }
 
             try {
-                fs.writeFileSync(this._codefilePath, code);
+                fs.writeFileSync(this._codeFilePath, code);
             } catch (err) {
                 return reject(err);
             }
@@ -91,6 +94,7 @@ class Arduino {
                 '--verbose',
                 '--build-path', this._buildPath,
                 '--build-cache-path', this._buildCachePath,
+                '--config-file', this._configFilePath,
                 this._codeFolderPath
             ];
 
@@ -166,6 +170,7 @@ class Arduino {
             '--fqbn', this._config.fqbn,
             '--verbose',
             '--verify',
+            '--config-file', this._configFilePath,
             `-p${this._peripheralPath}`
         ];
 
