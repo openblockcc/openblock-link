@@ -34,7 +34,6 @@
   },
   "homepage": "https://github.com/openblockcc/openblock-link#readme",
   "dependencies": {
-    "@abandonware/noble": "1.9.2-15",
     "ansi-string": "^0.2.1",
     "cli-color": "^2.0.1",
     "download-github-release": "^0.3.2",
