@@ -52,6 +52,10 @@ class Arduino {
         // if arduino cli config haven be init, set it to link arduino path.
         const buf = spawnSync(this._arduinoCliPath, ['config', 'dump', '--config-file', this._configFilePath]);
         try {
+            if (buf.error) {
+                throw buf.error;
+            }
+
             const stdout = yaml.load(buf.stdout.toString());
 
             if (stdout.directories.data !== this._arduinoPath) {
@@ -65,7 +69,7 @@ class Arduino {
                     '--config-file', this._configFilePath]);
             }
         } catch (err) {
-            this._sendstd(`${ansi.red}arduino cli init error:`, err);
+            this._sendstd(`${ansi.red}arduino cli init error:${err.toString()}\n`);
         }
 
     }
