@@ -7,3 +7,4 @@ node_modules/
 # Binary tools
 tools/
 firmwares/
+tmp/
