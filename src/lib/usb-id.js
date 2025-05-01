@@ -29,10 +29,32 @@ const usbId = {
     'USB\\VID_2A03&PID_8036': 'Arduino Leonardo',
     // Microbit
     'USB\\VID_0D28&PID_0204': 'Microbit',
-    // Raspberry Pi Pico Arduino
+    // Raspberry Pi Pico
     'USB\\VID_2E8A&PID_000A': 'Raspberry Pi Pico',
-    // Raspberry Pi Pico MicroPython
-    'USB\\VID_2E8A&PID_0005': 'Raspberry Pi Pico',
+    'USB\\VID_2E8A&PID_010A': 'Raspberry Pi Pico',
+    'USB\\VID_2E8A&PID_400A': 'Raspberry Pi Pico',
+    'USB\\VID_2E8A&PID_410A': 'Raspberry Pi Pico',
+    'USB\\VID_2E8A&PID_800A': 'Raspberry Pi Pico',
+    'USB\\VID_2E8A&PID_810A': 'Raspberry Pi Pico',
+    'USB\\VID_2E8A&PID_C00A': 'Raspberry Pi Pico',
+    'USB\\VID_2E8A&PID_C10A': 'Raspberry Pi Pico',
+    // Raspberry Pi Pico W
+    'USB\\VID_2E8A&PID_F00A': 'Raspberry Pi Pico W',
+    'USB\\VID_2E8A&PID_F10A': 'Raspberry Pi Pico W',
+    // Raspberry Pi Pico 2
+    'USB\\VID_2E8A&PID_000F': 'Raspberry Pi Pico 2',
+    'USB\\VID_2E8A&PID_010F': 'Raspberry Pi Pico 2',
+    'USB\\VID_2E8A&PID_400F': 'Raspberry Pi Pico 2',
+    'USB\\VID_2E8A&PID_410F': 'Raspberry Pi Pico 2',
+    'USB\\VID_2E8A&PID_800F': 'Raspberry Pi Pico 2',
+    'USB\\VID_2E8A&PID_810F': 'Raspberry Pi Pico 2',
+    'USB\\VID_2E8A&PID_C00F': 'Raspberry Pi Pico 2',
+    'USB\\VID_2E8A&PID_C10F': 'Raspberry Pi Pico 2',
+    // Raspberry Pi Pico 2 W
+    'USB\\VID_2E8A&PID_F00F': 'Raspberry Pi Pico 2 W',
+    'USB\\VID_2E8A&PID_F10F': 'Raspberry Pi Pico 2 W',
+    // Raspberry Pi Pico MicroPython (Same for all Raspberry Pi Pico models)
+    'USB\\VID_2E8A&PID_0005': 'Raspberry Pi Pico MicroPython',
     // Makey Makey
     'USB\\VID_1B4F&PID_2B74': 'Makey Makey',
     'USB\\VID_1B4F&PID_2B75': 'Makey Makey'
