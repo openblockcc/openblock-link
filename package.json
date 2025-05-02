@@ -34,25 +34,25 @@
   },
   "homepage": "https://github.com/openblockcc/openblock-link#readme",
   "dependencies": {
+    "7zip-bin": "^5.2.0",
     "ansi-string": "^0.2.1",
+    "axios": "^1.9.0",
     "cli-color": "^2.0.1",
     "download-github-release": "^0.3.2",
     "https": "^1.0.0",
     "install": "^0.13.0",
     "js-yaml": "^4.0.0",
+    "node-7z": "^3.0.0",
     "node-fetch": "^2.6.7",
+    "os": "^0.1.2",
     "serialport": "10.4.0",
     "ws": "^7.1.1"
   },
   "devDependencies": {
-    "7zip-bin": "^5.2.0",
-    "axios": "^1.8.1",
     "babel-eslint": "^10.0.1",
     "eslint": "^5.3.0",
     "eslint-config-scratch": "^5.0.0",
     "jsdoc": "^3.6.6",
-    "node-7z": "^3.0.0",
-    "os": "^0.1.2",
     "rimraf": "^3.0.2"
   }
 }
