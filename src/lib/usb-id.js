@@ -1,6 +1,8 @@
 const usbId = {
     // CH340
     'USB\\VID_1A86&PID_7523': 'USB-SERIAL CH340',
+    // CH343
+    'USB\\VID_1A86&PID_55D3': 'USB-SERIAL CH343',
     // CH9102
     'USB\\VID_1A86&PID_55D4': 'USB-SERIAL CH9102',
     // PL2303
